@@ -1,22 +1,22 @@
-﻿format MS64 COFF
+format MS64 COFF
 
 extrn '__imp_RtlFillMemory' as RtlFillMemory:qword
 public memset
-public asm_sinf
-public asm_cosf
+public Sin1f
+public Cos1f
 
 section '.text' code readable executable
 
 memset:
-    sub rsp, 8
+    sub rsp, 40
     mov r9d, edx
     mov rdx, r8
     mov r8d, r9d
     call [RtlFillMemory]
-    add rsp, 8
+    add rsp, 40
     ret
 
-asm_sinf:
+Sin1f:
     vmovaps xmm1, xmm0
     vmulss xmm0, xmm0, [k_f32_reciprocal_two_pi]
     vroundss xmm0, xmm0, xmm0, 0
@@ -38,7 +38,7 @@ asm_sinf:
     vmulss xmm0, xmm2, xmm0
     ret
 
-asm_cosf:
+Cos1f:
   .k_stack_size = 8+32
     sub rsp, .k_stack_size
     vmovaps [rsp], xmm6

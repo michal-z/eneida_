@@ -1,4 +1,4 @@
-﻿struct input_t
+struct input_t
 {
     float time;
     float2 resolution;

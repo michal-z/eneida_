@@ -71,5 +71,9 @@ struct demo
     frame_resources FrameRes[kNumBufferedFrames];
 };
 
+// defined in eneida_asmlib.asm
+extern "C" float Sin1f(float x);
+extern "C" float Cos1f(float x);
+
 static void *MemAlloc(size_t NumBytes);
 static void MemFree(void *Addr);
