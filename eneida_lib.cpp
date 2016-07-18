@@ -1,4 +1,4 @@
-static void *
+﻿static void *
 LoadFile(const char *Filename, size_t *Filesize)
 {
     if (!Filename || !Filesize) return nullptr;

@@ -1,4 +1,4 @@
-static bool
+﻿static bool
 CompileShaders(demo *Demo)
 {
     size_t VsBytecodeSize;

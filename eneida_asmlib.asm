@@ -1,4 +1,4 @@
-format MS64 COFF
+﻿format MS64 COFF
 
 extrn '__imp_RtlFillMemory' as RtlFillMemory:qword
 public memset
