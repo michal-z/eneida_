@@ -1,10 +1,10 @@
 ﻿static bool
-CompileShaders(demo *Demo)
+CompileShaders(demo_state *Demo)
 {
     size_t VsBytecodeSize;
     size_t PsBytecodeSize;
-    void *VsBytecode = LoadFile("data/vs_full_triangle.cso", &VsBytecodeSize);
-    void *PsBytecode = LoadFile("data/ps_sketch0.cso", &PsBytecodeSize);
+    void *VsBytecode = LoadDataFromFile("data/shader/XFormShadeVS.cso", &VsBytecodeSize);
+    void *PsBytecode = LoadDataFromFile("data/ps_sketch0.cso", &PsBytecodeSize);
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC PsoDesc = {};
     PsoDesc.VS                       = { VsBytecode, VsBytecodeSize };
@@ -19,24 +19,24 @@ CompileShaders(demo *Demo)
     PsoDesc.NumRenderTargets         = 1;
     PsoDesc.RTVFormats[0]            = DXGI_FORMAT_R8G8B8A8_UNORM;
     PsoDesc.SampleDesc.Count         = 1;
-    HRESULT Hr = Demo->Device->CreateGraphicsPipelineState(&PsoDesc, IID_PPV_ARGS(&Demo->TestPso));
-
-    if (VsBytecode) MemFree(VsBytecode);
-    if (PsBytecode) MemFree(PsBytecode);
+    HRESULT Hr = Demo->Device->CreateGraphicsPipelineState(&PsoDesc,
+                                                           IID_PPV_ARGS(&Demo->XFormShadePso));
+    if (VsBytecode) FreeFileData(VsBytecode);
+    if (PsBytecode) FreeFileData(PsBytecode);
     if (FAILED(Hr)) return false;
 
     return true;
 }
 
 static void
-GenerateGpuCommands(demo *Demo)
+GenerateGpuCommands(demo_state *Demo)
 {
     frame_resources *FrameRes = &Demo->FrameRes[Demo->FrameIndex];
     ID3D12GraphicsCommandList *CmdList = Demo->CmdList;
 
     FrameRes->CmdAlloc->Reset();
 
-    CmdList->Reset(FrameRes->CmdAlloc, Demo->TestPso);
+    CmdList->Reset(FrameRes->CmdAlloc, Demo->XFormShadePso);
     //cmdlist->SetDescriptorHeaps(1, &fres->dheap);
 
     CmdList->RSSetViewports(1, &Demo->Viewport);
@@ -66,18 +66,18 @@ GenerateGpuCommands(demo *Demo)
 }
 
 static bool
-InitDemo(demo *Demo)
+InitializeDemo(demo_state *Demo)
 {
     return true;
 }
 
 static void
-DeinitDemo(demo *Demo)
+ShutdownDemo(demo_state *Demo)
 {
 }
 
 static void
-UpdateDemo(demo *Demo)
+UpdateDemo(demo_state *Demo)
 {
     GenerateGpuCommands(Demo);
     Demo->CmdQueue->ExecuteCommandLists(1, (ID3D12CommandList **)&Demo->CmdList);

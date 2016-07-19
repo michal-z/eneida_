@@ -5,6 +5,13 @@
 #include <d3d12.h>
 #include <immintrin.h>
 
+// TODO: Finish Assert implementation
+#ifdef _DEBUG
+#define Assert(Expression) if (!(Expression)) { __debugbreak(); }
+#else
+#define Assert(Expression)
+#endif
+
 #define kNumSwapbuffers 4
 #define kNumBufferedFrames 3
 #define kNumGpuDescriptors 1000
@@ -17,6 +24,8 @@
 #define SAFE_RELEASE(x) if ((x)) { (x)->Release(); (x) = nullptr; }
 
 #include "eneida_math.h"
+#include "eneida_memory.h"
+
 
 struct frame_resources
 {
@@ -38,7 +47,13 @@ struct frame_sync
     HANDLE Event;
 };
 
-struct demo
+struct mesh
+{
+    ID3D12Resource *VBuffer;
+    ID3D12Resource *IBuffer;
+};
+
+struct demo_state
 {
     uint32_t SwapbufferIndex;
     uint32_t FrameIndex;
@@ -65,8 +80,10 @@ struct demo
     ID3D12DescriptorHeap *RtvHeap;
     D3D12_CPU_DESCRIPTOR_HANDLE RtvHeapStart;
 
-    ID3D12PipelineState *TestPso;
+    ID3D12PipelineState *XFormShadePso;
+    mesh Mesh;
 
+    memory_arena MemArena;
     frame_sync FrameSync;
     frame_resources FrameRes[kNumBufferedFrames];
 };
@@ -78,9 +95,9 @@ extern "C" float Cos1f(float x);
 // Dummy functions with empty implementations.
 // They can be used to inspect assembly generated
 // by the compiler. For example:
-// void *data = LoadData();
-// ProcessData(data); // code to be inspected
-// StoreData(data);
+// void *Data = LoadDummyData();
+// ProcessData(Data); // code to be inspected
+// StoreDummyData(Data);
 // This ensures that the code we are interested in
 // won't be optimized out.
 extern "C" void *LoadDummyData();

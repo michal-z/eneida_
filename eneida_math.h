@@ -27,7 +27,6 @@ operator*(float4 V0, float4 V1)
 __forceinline float4 __vectorcall
 operator/(float4 V0, float4 V1)
 {
-    // TODO: add assertion here to ensure that V1 != 0
     return _mm_div_ps(V0, V1);
 }
 
@@ -67,7 +66,6 @@ operator*(float4x4 M0, const float4x4 &M1)
 __forceinline float4x4 __vectorcall
 operator/(float4x4 M0, const float4x4 &M1)
 {
-    // TODO: add assertions
     float4x4 Res;
     Res.R[0] = _mm_div_ps(M0.R[0], M1.R[0]);
     Res.R[1] = _mm_div_ps(M0.R[1], M1.R[1]);

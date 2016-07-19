@@ -18,7 +18,7 @@ Winproc(HWND Win, UINT Msg, WPARAM Wparam, LPARAM Lparam)
 }
 
 static bool
-Init(demo *Demo)
+Initialize(demo_state *Demo)
 {
     WNDCLASS Winclass = {};
     Winclass.lpfnWndProc = Winproc;
@@ -167,7 +167,7 @@ Init(demo *Demo)
                                          nullptr, IID_PPV_ARGS(&Demo->CmdList));
     if (FAILED(Hr)) return false;
 
-    if (!InitDemo(Demo)) return false;
+    if (!InitializeDemo(Demo)) return false;
 
     Demo->CmdList->Close();
     Demo->CmdQueue->ExecuteCommandLists(1, (ID3D12CommandList **)&Demo->CmdList);
@@ -177,14 +177,14 @@ Init(demo *Demo)
 }
 
 static void
-Deinit(demo *Demo)
+Shutdown(demo_state *Demo)
 {
     if (Demo->CmdQueue && Demo->FrameSync.Fence)
     {
         WaitForGpu(Demo->CmdQueue, &Demo->FrameSync);
     }
 
-    DeinitDemo(Demo);
+    ShutdownDemo(Demo);
 
     SAFE_RELEASE(Demo->Swapchain);
     SAFE_RELEASE(Demo->CmdQueue);
@@ -193,7 +193,7 @@ Deinit(demo *Demo)
 }
 
 static void
-Update(demo *Demo)
+Update(demo_state *Demo)
 {
     UpdateDemo(Demo);
 
@@ -219,14 +219,27 @@ Update(demo *Demo)
 void
 Start()
 {
-    demo Demo = {};
-    Demo.Resolution[0] = kDemoResX;
-    Demo.Resolution[1] = kDemoResY;
-
-    if (!Init(&Demo))
+#define kMemorySize (32 * 1024 * 1024)
+    void *DemoMemory = VirtualAlloc(0, kMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    if (!DemoMemory)
     {
-        Deinit(&Demo);
+        // TODO: Display message box here
         ExitProcess(1);
+    }
+
+    demo_state *DemoState = (demo_state *)DemoMemory;
+    DemoState->Resolution[0] = kDemoResX;
+    DemoState->Resolution[1] = kDemoResY;
+
+    InitializeArena(&DemoState->MemArena, kMemorySize - sizeof(demo_state),
+                    ((uint8_t *)DemoMemory) + sizeof(demo_state));
+
+    if (!Initialize(DemoState))
+    {
+        // TODO: Display message box here
+        Shutdown(DemoState);
+        VirtualFree(DemoMemory, 0, MEM_RELEASE);
+        ExitProcess(2);
     }
 
     MSG Msg = {};
@@ -239,11 +252,12 @@ Start()
         }
         else
         {
-            UpdateFrameStats(Demo.Hwnd, &Demo.Time, &Demo.TimeDelta);
-            Update(&Demo);
+            UpdateFrameStats(DemoState->Hwnd, &DemoState->Time, &DemoState->TimeDelta);
+            Update(DemoState);
         }
     }
 
-    Deinit(&Demo);
+    Shutdown(DemoState);
+    VirtualFree(DemoMemory, 0, MEM_RELEASE);
     ExitProcess(0);
 }

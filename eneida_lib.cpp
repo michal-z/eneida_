@@ -1,20 +1,11 @@
-﻿static void *
-MemAlloc(size_t NumBytes)
+﻿static void
+FreeFileData(void *Addr)
 {
-    static HANDLE GlobHeap = GetProcessHeap();
-    void *Data = HeapAlloc(GlobHeap, 0, NumBytes);
-    return Data;
-}
-
-static void
-MemFree(void *Addr)
-{
-    static HANDLE GlobHeap = GetProcessHeap();
-    HeapFree(GlobHeap, 0, Addr);
+    VirtualFree(Addr, 0, MEM_RELEASE);
 }
 
 static void *
-LoadFile(const char *Filename, size_t *Filesize)
+LoadDataFromFile(const char *Filename, size_t *Filesize)
 {
     if (!Filename || !Filesize) return nullptr;
 
@@ -29,7 +20,7 @@ LoadFile(const char *Filename, size_t *Filesize)
         return nullptr;
     }
 
-    void *Data = MemAlloc(Size);
+    void *Data = VirtualAlloc(0, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (!Data)
     {
         CloseHandle(File);
@@ -41,7 +32,7 @@ LoadFile(const char *Filename, size_t *Filesize)
     if (!Res || (Bytes != Size))
     {
         CloseHandle(File);
-        MemFree(Data);
+        FreeFileData(Data);
         return nullptr;
     }
 
