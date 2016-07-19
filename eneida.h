@@ -1,10 +1,9 @@
-﻿#pragma once
-
-#include <stdint.h>
+﻿#include <stdint.h>
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <dxgi1_4.h>
 #include <d3d12.h>
+#include <immintrin.h>
 
 #define kNumSwapbuffers 4
 #define kNumBufferedFrames 3
@@ -17,6 +16,7 @@
 
 #define SAFE_RELEASE(x) if ((x)) { (x)->Release(); (x) = nullptr; }
 
+#include "eneida_math.h"
 
 struct frame_resources
 {
@@ -75,5 +75,13 @@ struct demo
 extern "C" float Sin1f(float x);
 extern "C" float Cos1f(float x);
 
-static void *MemAlloc(size_t NumBytes);
-static void MemFree(void *Addr);
+// Dummy functions with empty implementations.
+// They can be used to inspect assembly generated
+// by the compiler. For example:
+// void *data = LoadData();
+// ProcessData(data); // code to be inspected
+// StoreData(data);
+// This ensures that the code we are interested in
+// won't be optimized out.
+extern "C" void *LoadDummyData();
+extern "C" void StoreDummyData(void *);

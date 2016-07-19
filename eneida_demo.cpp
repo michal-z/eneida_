@@ -65,20 +65,6 @@ GenerateGpuCommands(demo *Demo)
     CmdList->Close();
 }
 
-static void
-WaitForGpu(ID3D12CommandQueue *CmdQueue, frame_sync *F)
-{
-    F->Value++;
-
-    CmdQueue->Signal(F->Fence, F->Value);
-
-    if (F->Fence->GetCompletedValue() < F->Value)
-    {
-        F->Fence->SetEventOnCompletion(F->Value, F->Event);
-        WaitForSingleObject(F->Event, INFINITE);
-    }
-}
-
 static bool
 InitDemo(demo *Demo)
 {

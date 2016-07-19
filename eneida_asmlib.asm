@@ -1,14 +1,23 @@
 format MS64 COFF
 
 extrn '__imp_RtlFillMemory' as RtlFillMemory:qword
+
 public memset
 public Sin1f
 public Cos1f
+public StoreDummyData
+public LoadDummyData
 
 section '.text' code readable executable
 
+LoadDummyData:
+    ret
+
+StoreDummyData:
+    ret
+
 memset:
-    sub rsp, 40
+    sub rsp, 40             ; align stack to 16 bytes and reserve shadow space
     mov r9d, edx
     mov rdx, r8
     mov r8d, r9d
@@ -39,7 +48,7 @@ Sin1f:
     ret
 
 Cos1f:
-  .k_stack_size = 8+32
+  .k_stack_size = 8+32      ; align stack to 16 bytes and reserve space for xmm6, xmm7
     sub rsp, .k_stack_size
     vmovaps [rsp], xmm6
     vmovaps [rsp+16], xmm7
@@ -82,3 +91,5 @@ k_f32_half_pi: dd 8 dup 1.570796327
 k_f32_one: dd 8 dup 1.0
 k_f32_sin_coefficients: dd -0.16666667,0.0083333310,-0.00019840874,2.7525562e-06,-2.3889859e-08,-0.16665852,0.0083139502,-0.00018524670
 k_f32_cos_coefficients: dd -0.5,0.041666638,-0.0013888378,2.4760495e-05,-2.6051615e-07,-0.49992746,0.041493919,-0.0012712436
+
+; vim: ft=fasm :

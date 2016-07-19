@@ -20,7 +20,7 @@ if errorlevel 1 goto fail
 
 :: /Fm generates linker map file
 :: /Fa generates assembly listing
-cl /Zi /Od /D_DEBUG /arch:AVX2 /Gm- /nologo /WX /D_CRT_SECURE_NO_WARNINGS /W3 /GS- /Gs999999 /Gy /Gw /EHa- eneida.cpp ^
+cl /Zi /Ox /DNDEBUG /arch:AVX2 /Gm- /nologo /WX /D_CRT_SECURE_NO_WARNINGS /W3 /GS- /Gs999999 /Gy /Gw /EHa- eneida.cpp ^
    /link eneida_asmlib.obj d3d12.lib dxgi.lib dxguid.lib kernel32.lib user32.lib gdi32.lib ^
    /OPT:REF /INCREMENTAL:NO /SUBSYSTEM:WINDOWS /ENTRY:Start /NODEFAULTLIB
 if errorlevel 1 goto fail

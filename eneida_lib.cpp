@@ -1,4 +1,19 @@
 ﻿static void *
+MemAlloc(size_t NumBytes)
+{
+    static HANDLE GlobHeap = GetProcessHeap();
+    void *Data = HeapAlloc(GlobHeap, 0, NumBytes);
+    return Data;
+}
+
+static void
+MemFree(void *Addr)
+{
+    static HANDLE GlobHeap = GetProcessHeap();
+    HeapFree(GlobHeap, 0, Addr);
+}
+
+static void *
 LoadFile(const char *Filename, size_t *Filesize)
 {
     if (!Filename || !Filesize) return nullptr;
@@ -95,17 +110,16 @@ UpdateFrameStats(HWND Win, double *Time, float *TimeDelta)
     FpsFrame++;
 }
 
-static void *
-MemAlloc(size_t NumBytes)
-{
-    static HANDLE GlobHeap = GetProcessHeap();
-    void *Data = HeapAlloc(GlobHeap, 0, NumBytes);
-    return Data;
-}
-
 static void
-MemFree(void *Addr)
+WaitForGpu(ID3D12CommandQueue *CmdQueue, frame_sync *F)
 {
-    static HANDLE GlobHeap = GetProcessHeap();
-    HeapFree(GlobHeap, 0, Addr);
+    F->Value++;
+
+    CmdQueue->Signal(F->Fence, F->Value);
+
+    if (F->Fence->GetCompletedValue() < F->Value)
+    {
+        F->Fence->SetEventOnCompletion(F->Value, F->Event);
+        WaitForSingleObject(F->Event, INFINITE);
+    }
 }
