@@ -21,8 +21,8 @@ CompileShaders(demo_state *Demo)
     PsoDesc.SampleDesc.Count         = 1;
     HRESULT Hr = Demo->Device->CreateGraphicsPipelineState(&PsoDesc,
                                                            IID_PPV_ARGS(&Demo->XFormShadePso));
-    if (VsBytecode) FreeFileData(VsBytecode);
-    if (PsBytecode) FreeFileData(PsBytecode);
+    if (VsBytecode) FreeDataFromFile(VsBytecode);
+    if (PsBytecode) FreeDataFromFile(PsBytecode);
     if (FAILED(Hr)) return false;
 
     return true;

@@ -1,6 +1,7 @@
 ﻿static void
-FreeFileData(void *Addr)
+FreeDataFromFile(void *Addr)
 {
+    Assert(Addr);
     VirtualFree(Addr, 0, MEM_RELEASE);
 }
 
@@ -32,7 +33,7 @@ LoadDataFromFile(const char *Filename, size_t *Filesize)
     if (!Res || (Bytes != Size))
     {
         CloseHandle(File);
-        FreeFileData(Data);
+        FreeDataFromFile(Data);
         return nullptr;
     }
 
