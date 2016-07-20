@@ -1,12 +1,12 @@
 ﻿static void
-FreeDataFromFile(void *Addr)
+UnloadFile(void *Addr)
 {
     Assert(Addr);
     VirtualFree(Addr, 0, MEM_RELEASE);
 }
 
 static void *
-LoadDataFromFile(const char *Filename, size_t *Filesize)
+LoadFile(const char *Filename, size_t *Filesize)
 {
     if (!Filename || !Filesize) return nullptr;
 
@@ -21,7 +21,7 @@ LoadDataFromFile(const char *Filename, size_t *Filesize)
         return nullptr;
     }
 
-    void *Data = VirtualAlloc(0, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    void *Data = VirtualAlloc(nullptr, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (!Data)
     {
         CloseHandle(File);
@@ -33,27 +33,13 @@ LoadDataFromFile(const char *Filename, size_t *Filesize)
     if (!Res || (Bytes != Size))
     {
         CloseHandle(File);
-        FreeDataFromFile(Data);
+        UnloadFile(Data);
         return nullptr;
     }
 
     CloseHandle(File);
     *Filesize = Size;
     return Data;
-}
-
-static void
-TransitionBarrier(ID3D12GraphicsCommandList *CmdList, ID3D12Resource *Resource,
-                  D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter)
-{
-    D3D12_RESOURCE_BARRIER BarrierDesc = {};
-    BarrierDesc.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    BarrierDesc.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    BarrierDesc.Transition.pResource   = Resource;
-    BarrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    BarrierDesc.Transition.StateBefore = StateBefore;
-    BarrierDesc.Transition.StateAfter  = StateAfter;
-    CmdList->ResourceBarrier(1, &BarrierDesc);
 }
 
 static double
@@ -103,6 +89,20 @@ UpdateFrameStats(HWND Win, double *Time, float *TimeDelta)
 }
 
 static void
+TransitionBarrier(ID3D12GraphicsCommandList *CmdList, ID3D12Resource *Resource,
+                  D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter)
+{
+    D3D12_RESOURCE_BARRIER BarrierDesc = {};
+    BarrierDesc.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    BarrierDesc.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    BarrierDesc.Transition.pResource   = Resource;
+    BarrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    BarrierDesc.Transition.StateBefore = StateBefore;
+    BarrierDesc.Transition.StateAfter  = StateAfter;
+    CmdList->ResourceBarrier(1, &BarrierDesc);
+}
+
+static void
 WaitForGpu(ID3D12CommandQueue *CmdQueue, frame_sync *F)
 {
     F->Value++;
@@ -114,4 +114,41 @@ WaitForGpu(ID3D12CommandQueue *CmdQueue, frame_sync *F)
         F->Fence->SetEventOnCompletion(F->Value, F->Event);
         WaitForSingleObject(F->Event, INFINITE);
     }
+}
+
+static ID3D12Resource *
+CreateUploadBuffer(ID3D12Device *Device, uint64_t BufferSize, void **BufferCpuPtr = nullptr)
+{
+    Assert(BufferSize > 0);
+
+    D3D12_HEAP_PROPERTIES HeapProps = {};
+    HeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+    D3D12_RESOURCE_DESC BufferDesc = {};
+    BufferDesc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
+    BufferDesc.Width            = BufferSize;
+    BufferDesc.Height           = 1;
+    BufferDesc.DepthOrArraySize = 1;
+    BufferDesc.MipLevels        = 1;
+    BufferDesc.SampleDesc.Count = 1;
+    BufferDesc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+    ID3D12Resource *UploadBuffer = nullptr;
+    HRESULT Hr = Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc,
+                                                 D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                                 IID_PPV_ARGS(&UploadBuffer));
+    if (FAILED(Hr)) return nullptr;
+
+    if (BufferCpuPtr)
+    {
+        D3D12_RANGE range = {};
+        Hr = UploadBuffer->Map(0, &range, BufferCpuPtr);
+        if (FAILED(Hr))
+        {
+            SAFE_RELEASE(UploadBuffer);
+            return nullptr;
+        }
+    }
+
+    return UploadBuffer;
 }

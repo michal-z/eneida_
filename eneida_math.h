@@ -6,31 +6,31 @@ struct float4x4
     float4 R[4];
 };
 
-__forceinline float4 __vectorcall
+inline float4 __vectorcall
 operator+(float4 V0, float4 V1)
 {
     return _mm_add_ps(V0, V1);
 }
 
-__forceinline float4 __vectorcall
+inline float4 __vectorcall
 operator-(float4 V0, float4 V1)
 {
     return _mm_sub_ps(V0, V1);
 }
 
-__forceinline float4 __vectorcall
+inline float4 __vectorcall
 operator*(float4 V0, float4 V1)
 {
     return _mm_mul_ps(V0, V1);
 }
 
-__forceinline float4 __vectorcall
+inline float4 __vectorcall
 operator/(float4 V0, float4 V1)
 {
     return _mm_div_ps(V0, V1);
 }
 
-__forceinline float4x4 __vectorcall
+inline float4x4 __vectorcall
 operator+(float4x4 M0, const float4x4 &M1)
 {
     float4x4 Res;
@@ -41,7 +41,7 @@ operator+(float4x4 M0, const float4x4 &M1)
     return Res;
 }
 
-__forceinline float4x4 __vectorcall
+inline float4x4 __vectorcall
 operator-(float4x4 M0, const float4x4 &M1)
 {
     float4x4 Res;
@@ -52,7 +52,7 @@ operator-(float4x4 M0, const float4x4 &M1)
     return Res;
 }
 
-__forceinline float4x4 __vectorcall
+inline float4x4 __vectorcall
 operator*(float4x4 M0, const float4x4 &M1)
 {
     float4x4 Res;
@@ -63,7 +63,7 @@ operator*(float4x4 M0, const float4x4 &M1)
     return Res;
 }
 
-__forceinline float4x4 __vectorcall
+inline float4x4 __vectorcall
 operator/(float4x4 M0, const float4x4 &M1)
 {
     float4x4 Res;

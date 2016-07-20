@@ -26,7 +26,6 @@
 #include "eneida_math.h"
 #include "eneida_memory.h"
 
-
 struct frame_resources
 {
     ID3D12CommandAllocator *CmdAlloc;
@@ -51,6 +50,8 @@ struct mesh
 {
     ID3D12Resource *VBuffer;
     ID3D12Resource *IBuffer;
+    D3D12_VERTEX_BUFFER_VIEW VBufferView;
+    D3D12_INDEX_BUFFER_VIEW IBufferView;
 };
 
 struct demo_state
@@ -81,8 +82,8 @@ struct demo_state
     D3D12_CPU_DESCRIPTOR_HANDLE RtvHeapStart;
 
     ID3D12PipelineState *XFormShadePso;
-    mesh Mesh;
 
+    mesh Mesh;
     memory_arena MemArena;
     frame_sync FrameSync;
     frame_resources FrameRes[kNumBufferedFrames];

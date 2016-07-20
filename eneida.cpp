@@ -167,11 +167,23 @@ Initialize(demo_state *Demo)
                                          nullptr, IID_PPV_ARGS(&Demo->CmdList));
     if (FAILED(Hr)) return false;
 
-    if (!InitializeDemo(Demo)) return false;
+    temporary_memory MemForInit = BeginTemporaryMemory(&Demo->MemArena);
+
+    DxResourceNode UploadResources = {};
+
+    if (!InitializeDemo(Demo, &UploadResources, MemForInit)) return false;
 
     Demo->CmdList->Close();
     Demo->CmdQueue->ExecuteCommandLists(1, (ID3D12CommandList **)&Demo->CmdList);
     WaitForGpu(Demo->CmdQueue, &Demo->FrameSync);
+
+    // release all upload resources
+    for (DxResourceNode *Node = UploadResources.Next; Node; Node = Node->Next)
+    {
+        SAFE_RELEASE(Node->Resource);
+    }
+
+    EndTemporaryMemory(MemForInit);
 
     return true;
 }
@@ -201,10 +213,10 @@ Update(demo_state *Demo)
 
     frame_sync *Sync = &Demo->FrameSync;
 
-    const uint64_t CpuValue = ++Sync->Value;
+    uint64_t CpuValue = ++Sync->Value;
     Demo->CmdQueue->Signal(Sync->Fence, CpuValue);
 
-    const uint64_t GpuValue = Sync->Fence->GetCompletedValue();
+    uint64_t GpuValue = Sync->Fence->GetCompletedValue();
 
     if ((CpuValue - GpuValue) >= kNumBufferedFrames)
     {
@@ -220,12 +232,13 @@ void
 Start()
 {
 #define kMemorySize (32 * 1024 * 1024)
-    void *DemoMemory = VirtualAlloc(0, kMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    void *DemoMemory = VirtualAlloc(nullptr, kMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (!DemoMemory)
     {
         // TODO: Display message box here
         ExitProcess(1);
     }
+    memset(DemoMemory, 0, kMemorySize);
 
     demo_state *DemoState = (demo_state *)DemoMemory;
     DemoState->Resolution[0] = kDemoResX;

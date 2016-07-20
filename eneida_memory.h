@@ -70,8 +70,8 @@ EndTemporaryMemory(temporary_memory TempMem)
     memory_arena *Arena = TempMem.Arena;
 
     Assert(Arena->Offset >= TempMem.Offset);
-    Assert(Arena->TempAllocations > 0);
-
     Arena->Offset = TempMem.Offset;
+
+    Assert(Arena->TempAllocations > 0);
     Arena->TempAllocations--;
 }
