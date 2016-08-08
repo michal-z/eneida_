@@ -10,6 +10,16 @@ public LoadDummyData
 
 section '.text' code readable executable
 
+; cycles counting
+;xor eax, eax
+;cpuid                       ; retire + prevent issues
+;rdtsc                       ; read TSC into edx:eax
+;shl rdx, 32
+;lea r15, [rax + rdx]        ; combine to 64-bit quantity, save in r15
+; < code >
+;xor eax, eax
+;cpuid
+
 LoadDummyData:
     ret
 
