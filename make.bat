@@ -31,6 +31,7 @@ if exist hlsl\*.h del hlsl\*.h
 exit 0
 
 :fail
+pause
 if exist vc140.pdb del vc140.pdb
 if exist *.obj del *.obj
 if exist hlsl\*.h del hlsl\*.h

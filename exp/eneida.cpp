@@ -43,14 +43,43 @@ Init(demo_state *Demo)
     if (!Demo->Window) return 0;
 
  
-    CreateDXGIFactory1(IID_IDXGIFactory4, (void **)&Demo->FactoryDXGI);
-    D3D12CreateDevice(0, D3D_FEATURE_LEVEL_12_0, IID_ID3D12Device, (void **)&Demo->Gpu);
+    IDXGIFactory4 *FactoryDXGI = nullptr;
+    COMCHECK(CreateDXGIFactory1(IID_IDXGIFactory4, (void **)&FactoryDXGI));
+    COMCHECK(D3D12CreateDevice(0, D3D_FEATURE_LEVEL_12_0, IID_ID3D12Device, (void **)&Demo->Gpu));
 
     D3D12_COMMAND_QUEUE_DESC CmdQueueDesc = {};
     CmdQueueDesc.Flags    = D3D12_COMMAND_QUEUE_FLAG_NONE;
     CmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
     CmdQueueDesc.Type     = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    Demo->Gpu->CreateCommandQueue(&CmdQueueDesc, IID_ID3D12CommandQueue, (void **)&Demo->CmdQueue);
+    COMCHECK(Demo->Gpu->CreateCommandQueue(&CmdQueueDesc, IID_ID3D12CommandQueue,
+                                           (void **)&Demo->CmdQueue));
+
+    DXGI_SWAP_CHAIN_DESC SwapchainDesc = {};
+    SwapchainDesc.BufferCount       = kNumSwapbuffers;
+    SwapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    SwapchainDesc.BufferUsage       = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    SwapchainDesc.OutputWindow      = Demo->Window;
+    SwapchainDesc.SampleDesc.Count  = 1;
+    SwapchainDesc.SwapEffect        = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    SwapchainDesc.Windowed          = (kDemoFullscreen ? FALSE : TRUE);
+
+    IDXGISwapChain *Swapchain = nullptr;
+    COMCHECK(FactoryDXGI->CreateSwapChain(Demo->CmdQueue, &SwapchainDesc, &Swapchain));
+    COMCHECK(Swapchain->QueryInterface(IID_IDXGISwapChain3, (void **)&Demo->Swapchain));
+    COMRELEASE(Swapchain);
+    COMRELEASE(FactoryDXGI);
+
+    Demo->RtvSize = Demo->Gpu->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    Demo->CbvSrvUavSize = Demo->Gpu->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+
+    D3D12_DESCRIPTOR_HEAP_DESC RtvHeapDesc = {};
+    RtvHeapDesc.NumDescriptors = kNumSwapbuffers;
+    RtvHeapDesc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    RtvHeapDesc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    COMCHECK(Demo->Gpu->CreateDescriptorHeap(&RtvHeapDesc, IID_ID3D12DescriptorHeap,
+                                             (void **)&Demo->RtvHeap));
+    Demo->RtvHeapStart = Demo->RtvHeap->GetCPUDescriptorHandleForHeapStart();
 
     return 1;
 }
@@ -89,10 +118,9 @@ Start()
     if (Dbg)
     {
         Dbg->EnableDebugLayer();
-        //SAFE_RELEASE(Dbg);
+        COMRELEASE(Dbg);
     }
 #endif
-
 
     demo_state Demo = {};
     Demo.Resolution[0] = 1280;
