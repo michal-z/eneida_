@@ -51,8 +51,7 @@ Init(demo_state *Demo)
     CmdQueueDesc.Flags    = D3D12_COMMAND_QUEUE_FLAG_NONE;
     CmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
     CmdQueueDesc.Type     = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    COMCHECK(Demo->Gpu->CreateCommandQueue(&CmdQueueDesc, IID_ID3D12CommandQueue,
-                                           (void **)&Demo->CmdQueue));
+    COMCHECK(Demo->Gpu->CreateCommandQueue(&CmdQueueDesc, IID_ID3D12CommandQueue, (void **)&Demo->CmdQueue));
 
     DXGI_SWAP_CHAIN_DESC SwapchainDesc = {};
     SwapchainDesc.BufferCount       = kNumSwapbuffers;
@@ -77,9 +76,21 @@ Init(demo_state *Demo)
     RtvHeapDesc.NumDescriptors = kNumSwapbuffers;
     RtvHeapDesc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     RtvHeapDesc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    COMCHECK(Demo->Gpu->CreateDescriptorHeap(&RtvHeapDesc, IID_ID3D12DescriptorHeap,
-                                             (void **)&Demo->RtvHeap));
+    COMCHECK(Demo->Gpu->CreateDescriptorHeap(&RtvHeapDesc, IID_ID3D12DescriptorHeap, (void **)&Demo->RtvHeap));
     Demo->RtvHeapStart = Demo->RtvHeap->GetCPUDescriptorHandleForHeapStart();
+
+    D3D12_CPU_DESCRIPTOR_HANDLE RtvHandle = Demo->RtvHeapStart;
+
+    for (u32 BufferIdx = 0; BufferIdx < kNumSwapbuffers; ++BufferIdx)
+    {
+        COMCHECK(Demo->Swapchain->GetBuffer(BufferIdx, IID_ID3D12Resource, (void **)&Demo->Swapbuffers[BufferIdx]));
+
+        Demo->Gpu->CreateRenderTargetView(Demo->Swapbuffers[BufferIdx], nullptr, RtvHandle);
+        RtvHandle.ptr += Demo->RtvSize;
+    }
+
+    Demo->Viewport = { 0.0f, 0.0f, (float)Demo->Resolution[0], (float)Demo->Resolution[1], 0.0f, 1.0f };
+    Demo->ScissorRect = { 0, 0, (long)Demo->Resolution[0], (long)Demo->Resolution[1] };
 
     return 1;
 }
