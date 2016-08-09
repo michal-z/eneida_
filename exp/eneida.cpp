@@ -4,14 +4,9 @@
 // needed by VC when CRT is not used (/NODEFAULTLIBS)
 extern "C" { i32 _fltused; }
 
-static void *s_Kernel32;
-static void *s_User32;
-static void *s_Gdi32;
-static void *s_Dxgi;
-static void *s_D3D12;
 
-static i64 STDCALL
-WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i64 Param2)
+
+static i64 STDCALL WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i64 Param2)
 {
     switch (Message)
     {
@@ -23,8 +18,7 @@ WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i64 Param2)
     return DefWindowProc(Window, Message, Param1, Param2);
 }
 
-static i32
-Initialize(demo_state *Demo)
+i32 Demo::Initialize()
 {
     WNDCLASS Winclass = {};
     Winclass.lpfnWndProc = WindowsMessageHandler;
@@ -33,7 +27,7 @@ Initialize(demo_state *Demo)
     Winclass.lpszClassName = kDemoName;
     if (!RegisterClass(&Winclass)) return 0;
 
-    RECT Rect = { 0, 0, (i32)Demo->Resolution[0], (i32)Demo->Resolution[1] };
+    RECT Rect = { 0, 0, (i32)m_Resolution[0], (i32)m_Resolution[1] };
     if (!AdjustWindowRect(&Rect, WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX, FALSE)) return 0;
 
     Demo->Window = CreateWindowEx(0, kDemoName, kDemoName,

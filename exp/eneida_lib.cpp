@@ -58,22 +58,7 @@ TransitionBarrier(ID3D12GraphicsCommandList *CmdList, ID3D12Resource *Resource,
     CmdList->ResourceBarrier(1, &BarrierDesc);
 }
 
-static void
-WaitForGpu(ID3D12CommandQueue *CmdQueue, frame_sync *F)
-{
-    F->Value++;
-
-    CmdQueue->Signal(F->Fence, F->Value);
-
-    if (F->Fence->GetCompletedValue() < F->Value)
-    {
-        F->Fence->SetEventOnCompletion(F->Value, F->Event);
-        WaitForSingleObject(F->Event, INFINITE);
-    }
-}
-
-static ID3D12Resource *
-CreateUploadBuffer(ID3D12Device *Gpu, u64 BufferSize, void **BufferCpuPtr = nullptr)
+static ID3D12Resource *CreateUploadBuffer(ID3D12Device *Gpu, u64 BufferSize, void** BufferCpuPtr = nullptr)
 {
     Assert(BufferSize > 0);
 
