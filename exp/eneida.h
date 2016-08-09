@@ -1,4 +1,4 @@
-#include "eneida_sys.h"
+#include "eneida_windows.h"
 
 // TODO: Finish Assert implementation
 #ifdef _DEBUG
@@ -7,8 +7,8 @@
 #define Assert(Expression)
 #endif
 
-#define COMRELEASE(comobj) { if ((comobj)) { (comobj)->Release(); (comobj) = nullptr; } }
-#define COMCHECK(r) { if (r != 0) { Assert(0); } }
+#define COMRELEASE(comobj) if ((comobj)) { (comobj)->Release(); (comobj) = nullptr; }
+#define COMCHECK(r) if ((r) != 0) { __debugbreak(); }
 
 #define kDemoName "eneida"
 #define kDemoResX 1280 
@@ -19,8 +19,32 @@
 #define kNumBufferedFrames 3
 #define kNumGpuDescriptors 1000
 
-struct demo_state
+#include "eneida_memory.h"
+
+class FrameResources
 {
+public:
+    i32 Initialize(DemoState *demo_state);
+
+    ID3D12CommandAllocator*     m_CmdAlloc;
+    ID3D12Resource*             m_Cb;
+    void*                       m_CbCpuAddr;
+    D3D12_GPU_VIRTUAL_ADDRESS   m_CbGpuAddr;
+    ID3D12DescriptorHeap*       m_Heap;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_HeapCpuStart;
+    D3D12_GPU_DESCRIPTOR_HANDLE m_HeapGpuStart;
+};
+
+struct frame_sync
+{
+    ID3D12Fence *Fence;
+    u64         Value;
+    void        *Event;
+};
+
+class DemoState
+{
+public:
     u32 SwapbufferIndex;
     u32 FrameIndex;
     u32 Resolution[2];
@@ -29,9 +53,10 @@ struct demo_state
 
     void *Window;
 
-    ID3D12Device       *Gpu;
-    ID3D12CommandQueue *CmdQueue;
-    IDXGISwapChain3    *Swapchain;
+    ID3D12Device              *Gpu;
+    ID3D12CommandQueue        *CmdQueue;
+    ID3D12GraphicsCommandList *CmdList;
+    IDXGISwapChain3           *Swapchain;
 
     u32 RtvSize;
     u32 CbvSrvUavSize;
@@ -43,4 +68,7 @@ struct demo_state
 
     ID3D12DescriptorHeap        *RtvHeap;
     D3D12_CPU_DESCRIPTOR_HANDLE RtvHeapStart;
+
+    frame_sync      FrameSync;
+    frame_resources FrameResources[kNumBufferedFrames];
 };

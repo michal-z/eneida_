@@ -22,6 +22,12 @@ typedef bool                b8;
 #define WS_MINIMIZEBOX      0x00020000L
 #define CW_USEDEFAULT       ((i32)0x80000000)
 
+#define INFINITE            0xFFFFFFFF
+
+#define STANDARD_RIGHTS_REQUIRED 0x000F0000L
+#define SYNCHRONIZE              0x00100000L
+#define EVENT_ALL_ACCESS    (STANDARD_RIGHTS_REQUIRED|SYNCHRONIZE|0x3)
+
 #define MAKEINTRESOURCE(i) ((char *)((u64)((u16)(i))))
 
 #define IDC_ARROW MAKEINTRESOURCE(32512)
@@ -82,6 +88,8 @@ struct LUID
     u32 LowPart;
     i32 HighPart;
 };
+
+#define	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES	( 0xffffffff )
 
 struct ID3D12Resource;
 struct ID3D12RootSignature;
@@ -2519,6 +2527,10 @@ typedef void  (STDCALL *OutputDebugString_fn)(const char *string);
 typedef void  (STDCALL *ExitProcess_fn)(u32 exit_code);
 typedef void *(STDCALL *GetModuleHandle_fn)(const char *module_name);
 typedef void  (STDCALL *Sleep_fn)(u32 milisec);
+typedef void *(STDCALL *CreateEventEx_fn)(SECURITY_ATTRIBUTES *lpEventAttributes, const char *lpName, u32 dwFlags, u32 dwDesiredAccess);
+typedef u32   (STDCALL *WaitForSingleObject_fn)(void *hHandle, u32 dwMilliseconds);
+typedef b32   (STDCALL *QueryPerformanceCounter_fn)(i64 *lpPerformanceCount);
+typedef b32   (STDCALL *QueryPerformanceFrequency_fn)(i64 *lpFrequency);
 
 typedef b32   (STDCALL *PeekMessage_fn)(MSG *msg, void *hwnd, u32 filter_min, u32 filter_max, u32 remove_msg);
 typedef i64   (STDCALL *DispatchMessage_fn)(const MSG *msg);
@@ -2530,17 +2542,23 @@ typedef void *(STDCALL *CreateWindowEx_fn)(u32 ex_style, const char *class_name,
                                            u32 style, i32 x, i32 y, i32 width, i32 height,
                                            void *hwnd_parent, void *hmenu, void *hinstance, void *param);
 typedef b32   (STDCALL *AdjustWindowRect_fn)(RECT *lpRect, u32 dwStyle, b32 bMenu);
+typedef i32   (__cdecl *wsprintf_fn)(char *str, const char *format, ...);
+typedef b32   (STDCALL *SetWindowText_fn)(void *hWnd, const char *lpString);
 
 typedef i32   (STDCALL *CreateDXGIFactory1_fn)(const GUID &riid, void **ppFactory);
 
-typedef i32 (STDCALL *D3D12CreateDevice_fn)(IUnknown *, D3D_FEATURE_LEVEL, const GUID &, void **);
-typedef i32 (STDCALL *D3D12GetDebugInterface_fn)(const GUID &, void **);
+typedef i32   (STDCALL *D3D12CreateDevice_fn)(IUnknown *, D3D_FEATURE_LEVEL, const GUID &, void **);
+typedef i32   (STDCALL *D3D12GetDebugInterface_fn)(const GUID &, void **);
 
 
 static OutputDebugString_fn         OutputDebugString;
 static ExitProcess_fn               ExitProcess;
 static DefWindowProc_fn             DefWindowProc;
 static Sleep_fn                     Sleep;
+static CreateEventEx_fn             CreateEventEx;
+static WaitForSingleObject_fn       WaitForSingleObject;
+static QueryPerformanceCounter_fn   QueryPerformanceCounter;
+static QueryPerformanceFrequency_fn QueryPerformanceFrequency;
 
 static PeekMessage_fn               PeekMessage;
 static DispatchMessage_fn           DispatchMessage;
@@ -2550,6 +2568,8 @@ static LoadCursor_fn                LoadCursor;
 static RegisterClass_fn             RegisterClass;
 static CreateWindowEx_fn            CreateWindowEx;
 static AdjustWindowRect_fn          AdjustWindowRect;
+static wsprintf_fn                  wsprintf;
+static SetWindowText_fn             SetWindowText;
 
 static CreateDXGIFactory1_fn        CreateDXGIFactory1;
 
