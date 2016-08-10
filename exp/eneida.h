@@ -21,14 +21,21 @@
 
 #include "eneida_memory.h"
 
-class Demo;
-
-class FrameResources
+static uint32_t                    s_FrameIndex;
+static uint32_t                    s_Resolution[2];
+static double                      s_Time;
+static float                       s_TimeDelta;
+static ID3D12Device*               s_Gpu;
+static ID3D12CommandQueue*         s_CmdQueue;
+static ID3D12GraphicsCommandList*  s_CmdList;
+static uint32_t                    s_RtvSize;
+static uint32_t                    s_CbvSrvUavSize;
+static D3D12_VIEWPORT              s_Viewport;
+static D3D12_RECT                  s_ScissorRect;
+static ID3D12DescriptorHeap*       s_RtvHeap;
+static D3D12_CPU_DESCRIPTOR_HANDLE s_RtvHeapStart;
+static struct FrameResources
 {
-public:
-    void Create(ID3D12Device* gpu);
-    void Release();
-
     ID3D12CommandAllocator*     m_CmdAlloc;
     ID3D12Resource*             m_Cb;
     void*                       m_CbCpuAddr;
@@ -36,44 +43,6 @@ public:
     ID3D12DescriptorHeap*       m_Heap;
     D3D12_CPU_DESCRIPTOR_HANDLE m_HeapCpuStart;
     D3D12_GPU_DESCRIPTOR_HANDLE m_HeapGpuStart;
-};
+}                                  s_FrameResources[kNumBufferedFrames];
 
-class Demo
-{
-public:
-    int32_t Initialize();
-    void    Shutdown();
-    void    Run();
-    void    WaitForGpu();
-
-    uint32_t                    m_FrameIndex;
-    uint32_t                    m_Resolution[2];
-    double                      m_Time;
-    float                       m_TimeDelta;
-    ID3D12Device*               m_Gpu;
-    ID3D12CommandQueue*         m_CmdQueue;
-    ID3D12GraphicsCommandList*  m_CmdList;
-    uint32_t                    m_RtvSize;
-    uint32_t                    m_CbvSrvUavSize;
-    D3D12_VIEWPORT              m_Viewport;
-    D3D12_RECT                  m_ScissorRect;
-    ID3D12DescriptorHeap*       m_RtvHeap;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_RtvHeapStart;
-    FrameResources              m_FrameResources[kNumBufferedFrames];
-
-private:
-    IDXGISwapChain3*            m_Swapchain;
-    void*                       m_Window;
-    uint32_t                    m_SwapbufferIndex;
-    ID3D12Resource*             m_Swapbuffers[kNumSwapbuffers];
-    ID3D12Fence*                m_FrameFence;
-    uint64_t                    m_FrameFenceValue;
-    void*                       m_FrameFenceEvent;
-    void*                       m_Kernel32;
-    void*                       m_User32;
-    void*                       m_Gdint32_t;
-    void*                       m_Dxgi;
-    void*                       m_D3D12;
-
-    static int64_t STDCALL WindowsMessageHandler(void* Window, uint32_t Message, uint64_t Param1, int64_t Param2);
-};
+static void FlushGpu();

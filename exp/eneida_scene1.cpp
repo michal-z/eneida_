@@ -1,11 +1,14 @@
 class Scene1
 {
 public:
-    i32 Initialize(DemoState *demo_state)
+    int32_t Initialize()
     {
         return 1;
     }
+    void Shutdown()
+    {
+    }
 
 private:
-    f32 m_ClearColor[4];
+    float m_ClearColor[4];
 };
