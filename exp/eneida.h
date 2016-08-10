@@ -27,7 +27,7 @@ class FrameResources
 {
 public:
     void Create(ID3D12Device* gpu);
-    void Shutdown();
+    void Release();
 
     ID3D12CommandAllocator*     m_CmdAlloc;
     ID3D12Resource*             m_Cb;
@@ -41,20 +41,20 @@ public:
 class Demo
 {
 public:
-    i32  Initialize();
-    void Shutdown();
-    void Run();
-    void WaitForGpu();
+    int32_t Initialize();
+    void    Shutdown();
+    void    Run();
+    void    WaitForGpu();
 
-    u32                         m_FrameIndex;
-    u32                         m_Resolution[2];
-    f64                         m_Time;
-    f32                         m_TimeDelta;
+    uint32_t                    m_FrameIndex;
+    uint32_t                    m_Resolution[2];
+    double                      m_Time;
+    float                       m_TimeDelta;
     ID3D12Device*               m_Gpu;
     ID3D12CommandQueue*         m_CmdQueue;
     ID3D12GraphicsCommandList*  m_CmdList;
-    u32                         m_RtvSize;
-    u32                         m_CbvSrvUavSize;
+    uint32_t                    m_RtvSize;
+    uint32_t                    m_CbvSrvUavSize;
     D3D12_VIEWPORT              m_Viewport;
     D3D12_RECT                  m_ScissorRect;
     ID3D12DescriptorHeap*       m_RtvHeap;
@@ -64,16 +64,16 @@ public:
 private:
     IDXGISwapChain3*            m_Swapchain;
     void*                       m_Window;
-    u32                         m_SwapbufferIndex;
+    uint32_t                    m_SwapbufferIndex;
     ID3D12Resource*             m_Swapbuffers[kNumSwapbuffers];
     ID3D12Fence*                m_FrameFence;
-    u64                         m_FrameFenceValue;
+    uint64_t                    m_FrameFenceValue;
     void*                       m_FrameFenceEvent;
     void*                       m_Kernel32;
     void*                       m_User32;
-    void*                       m_Gdi32;
+    void*                       m_Gdint32_t;
     void*                       m_Dxgi;
     void*                       m_D3D12;
 
-    static i64 STDCALL WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i64 Param2);
+    static int64_t STDCALL WindowsMessageHandler(void* Window, uint32_t Message, uint64_t Param1, int64_t Param2);
 };

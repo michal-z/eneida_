@@ -1,31 +1,31 @@
 struct memory_arena
 {
-    u8  *Base;
-    u64 Offset;
-    u64 Size;
-    i32 TempAllocations;
+    uint8_t  *Base;
+    uint64_t Offset;
+    uint64_t Size;
+    int32_t TempAllocations;
 };
 
 struct temporary_memory
 {
     memory_arena *Arena;
-    u64          Offset;
+    uint64_t          Offset;
 };
 
 inline void
-InitializeArena(memory_arena *Arena, u64 Size, void *Base)
+InitializeArena(memory_arena *Arena, uint64_t Size, void *Base)
 {
-    Arena->Base = (u8 *)Base;
+    Arena->Base = (uint8_t *)Base;
     Arena->Offset = 0;
     Arena->Size = Size;
     Arena->TempAllocations = 0;
 }
 
-inline u64
-GetAlignmentOffset(memory_arena *Arena, u64 Alignment)
+inline uint64_t
+GetAlignmentOffset(memory_arena *Arena, uint64_t Alignment)
 {
-    u64 CurrentAddr = (u64)Arena->Base + Arena->Offset;
-    u64 AlignmentOffset = 0;
+    uint64_t CurrentAddr = (uint64_t)Arena->Base + Arena->Offset;
+    uint64_t AlignmentOffset = 0;
 
     if (CurrentAddr & (Alignment - 1))
     {
@@ -36,14 +36,14 @@ GetAlignmentOffset(memory_arena *Arena, u64 Alignment)
 }
 
 inline void *
-Allocate(memory_arena *Arena, u64 Size, u64 Alignment = 8)
+Allocate(memory_arena *Arena, uint64_t Size, uint64_t Alignment = 8)
 {
-    u64 AlignmentOffset = GetAlignmentOffset(Arena, Alignment);
-    u64 AllocSize = Size + AlignmentOffset;
+    uint64_t AlignmentOffset = GetAlignmentOffset(Arena, Alignment);
+    uint64_t AllocSize = Size + AlignmentOffset;
     
     Assert((Arena->Offset + AllocSize) <= Arena->Size);
 
-    void *Result = (void *)((u64)Arena->Base + Arena->Offset + AlignmentOffset);
+    void *Result = (void *)((uint64_t)Arena->Base + Arena->Offset + AlignmentOffset);
     Arena->Offset += AllocSize;
 
     Assert(AllocSize >= Size);

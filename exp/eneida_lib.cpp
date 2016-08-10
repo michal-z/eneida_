@@ -1,25 +1,25 @@
-﻿static f64
+﻿static double
 GetTime()
 {
-    static i64 Freq;
-    static i64 StartCounter;
+    static int64_t Freq;
+    static int64_t StartCounter;
 
     if (Freq == 0)
     {
         QueryPerformanceFrequency(&Freq);
         QueryPerformanceCounter(&StartCounter);
     }
-    i64 Counter;
+    int64_t Counter;
     QueryPerformanceCounter(&Counter);
-    return (Counter - StartCounter) / (f64)Freq;
+    return (Counter - StartCounter) / (double)Freq;
 }
 
 static void
-UpdateFrameStats(void *Win, f64 *Time, f32 *TimeDelta)
+UpdateFrameStats(void *Win, double *Time, float *TimeDelta)
 {
-    static f64 PrevTime = -1.0;
-    static f64 PrevFpsTime = 0.0;
-    static u32 FpsFrame = 0;
+    static double PrevTime = -1.0;
+    static double PrevFpsTime = 0.0;
+    static uint32_t FpsFrame = 0;
 
     if (PrevTime < 0.0)
     {
@@ -28,15 +28,15 @@ UpdateFrameStats(void *Win, f64 *Time, f32 *TimeDelta)
     }
 
     *Time = GetTime();
-    *TimeDelta = (f32)(*Time - PrevTime);
+    *TimeDelta = (float)(*Time - PrevTime);
     PrevTime = *Time;
 
     if ((*Time - PrevFpsTime) >= 1.0)
     {
-        f64 Fps = FpsFrame / (*Time - PrevFpsTime);
-        f64 MicroS = (1.0 / Fps) * 1000000.0;
+        double Fps = FpsFrame / (*Time - PrevFpsTime);
+        double MicroS = (1.0 / Fps) * 1000000.0;
         char Text[256];
-        wsprintf(Text, "[%d fps  %d us] %s", (i32)Fps, (i32)MicroS, kDemoName);
+        wsprintf(Text, "[%d fps  %d us] %s", (int32_t)Fps, (int32_t)MicroS, kDemoName);
         SetWindowText(Win, Text);
         PrevFpsTime = *Time;
         FpsFrame = 0;
@@ -58,7 +58,7 @@ TransitionBarrier(ID3D12GraphicsCommandList *CmdList, ID3D12Resource *Resource,
     CmdList->ResourceBarrier(1, &BarrierDesc);
 }
 
-static ID3D12Resource *CreateUploadBuffer(ID3D12Device *Gpu, u64 BufferSize, void** BufferCpuPtr = nullptr)
+static ID3D12Resource *CreateUploadBuffer(ID3D12Device *Gpu, uint64_t BufferSize, void** BufferCpuPtr = nullptr)
 {
     Assert(BufferSize > 0);
 

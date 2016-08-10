@@ -2,9 +2,9 @@
 #include "eneida_lib.cpp"
 
 // needed by VC when CRT is not used (/NODEFAULTLIBS)
-extern "C" { i32 _fltused; }
+extern "C" { int32_t _fltused; }
 
-i64 STDCALL Demo::WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i64 Param2)
+int64_t STDCALL Demo::WindowsMessageHandler(void *Window, uint32_t Message, uint64_t Param1, int64_t Param2)
 {
     switch (Message)
     {
@@ -16,11 +16,11 @@ i64 STDCALL Demo::WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i
     return DefWindowProc(Window, Message, Param1, Param2);
 }
 
-i32 Demo::Initialize()
+int32_t Demo::Initialize()
 {
     m_Kernel32 = LoadLibraryA("kernel32.dll");
     m_User32 = LoadLibraryA("user32.dll");
-    m_Gdi32 = LoadLibraryA("gdi32.dll");
+    m_Gdint32_t = LoadLibraryA("gdint32_t.dll");
     m_Dxgi = LoadLibraryA("dxgi.dll");
     m_D3D12 = LoadLibraryA("d3d12.dll");
 
@@ -69,7 +69,7 @@ i32 Demo::Initialize()
     wc.lpszClassName = kDemoName;
     if (!RegisterClass(&wc)) return 0;
 
-    RECT rect = { 0, 0, (i32)m_Resolution[0], (i32)m_Resolution[1] };
+    RECT rect = { 0, 0, (int32_t)m_Resolution[0], (int32_t)m_Resolution[1] };
     if (!AdjustWindowRect(&rect, WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX, FALSE)) return 0;
 
     m_Window = CreateWindowEx(0, kDemoName, kDemoName,
@@ -118,7 +118,7 @@ i32 Demo::Initialize()
 
     D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = m_RtvHeapStart;
 
-    for (u32 i = 0; i < kNumSwapbuffers; ++i)
+    for (uint32_t i = 0; i < kNumSwapbuffers; ++i)
     {
         COMCHECK(m_Swapchain->GetBuffer(i, IID_ID3D12Resource, (void**)&m_Swapbuffers[i]));
 
@@ -127,10 +127,10 @@ i32 Demo::Initialize()
     }
 
     m_Viewport = { 0.0f, 0.0f, (float)m_Resolution[0], (float)m_Resolution[1], 0.0f, 1.0f };
-    m_ScissorRect = { 0, 0, (i32)m_Resolution[0], (i32)m_Resolution[1] };
+    m_ScissorRect = { 0, 0, (int32_t)m_Resolution[0], (int32_t)m_Resolution[1] };
 
 
-    for (u32 i = 0; i <kNumBufferedFrames; ++i)
+    for (uint32_t i = 0; i < kNumBufferedFrames; ++i)
     {
         m_FrameResources[i].Create(m_Gpu);
     }
@@ -216,10 +216,10 @@ void Demo::Run()
 
     m_Swapchain->Present(0, 0);
 
-    const u64 CpuValue = ++m_FrameFenceValue;
+    const uint64_t CpuValue = ++m_FrameFenceValue;
     m_CmdQueue->Signal(m_FrameFence, CpuValue);
 
-    const u64 GpuValue = m_FrameFence->GetCompletedValue();
+    const uint64_t GpuValue = m_FrameFence->GetCompletedValue();
 
     if ((CpuValue - GpuValue) >= kNumBufferedFrames)
     {
@@ -233,36 +233,36 @@ void Demo::Run()
 
 void FrameResources::Create(ID3D12Device* gpu)
 {
-        // command allocator
-        COMCHECK(gpu->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                             IID_ID3D12CommandAllocator, (void**)&m_CmdAlloc));
+    // command allocator
+    COMCHECK(gpu->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                         IID_ID3D12CommandAllocator, (void**)&m_CmdAlloc));
 
-        // GPU visible decriptor heap
-        D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
-        heap_desc.NumDescriptors = kNumGpuDescriptors;
-        heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        COMCHECK(gpu->CreateDescriptorHeap(&heap_desc, IID_ID3D12DescriptorHeap, (void**)&m_Heap));
+    // GPU visible decriptor heap
+    D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
+    heap_desc.NumDescriptors = kNumGpuDescriptors;
+    heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    COMCHECK(gpu->CreateDescriptorHeap(&heap_desc, IID_ID3D12DescriptorHeap, (void**)&m_Heap));
 
-        m_HeapCpuStart = m_Heap->GetCPUDescriptorHandleForHeapStart();
-        m_HeapGpuStart = m_Heap->GetGPUDescriptorHandleForHeapStart();
+    m_HeapCpuStart = m_Heap->GetCPUDescriptorHandleForHeapStart();
+    m_HeapGpuStart = m_Heap->GetGPUDescriptorHandleForHeapStart();
 
 
-        // constant buffer
-        D3D12_HEAP_PROPERTIES HeapProps = {};
-        HeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+    // constant buffer
+    D3D12_HEAP_PROPERTIES HeapProps = {};
+    HeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
 
-        D3D12_RESOURCE_DESC BufferDesc = {};
-        BufferDesc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
-        BufferDesc.Width            = 64 * 1024;
-        BufferDesc.Height           = 1;
-        BufferDesc.DepthOrArraySize = 1;
-        BufferDesc.MipLevels        = 1;
-        BufferDesc.SampleDesc.Count = 1;
-        BufferDesc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-        COMCHECK(gpu->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc,
-                                              D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-                                              IID_ID3D12Resource, (void **)&m_Cb));
+    D3D12_RESOURCE_DESC BufferDesc = {};
+    BufferDesc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
+    BufferDesc.Width            = 64 * 1024;
+    BufferDesc.Height           = 1;
+    BufferDesc.DepthOrArraySize = 1;
+    BufferDesc.MipLevels        = 1;
+    BufferDesc.SampleDesc.Count = 1;
+    BufferDesc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    COMCHECK(gpu->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc,
+                                          D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                          IID_ID3D12Resource, (void **)&m_Cb));
 }
 
 void Start()

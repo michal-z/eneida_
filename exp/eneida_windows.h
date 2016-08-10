@@ -1,15 +1,12 @@
-﻿typedef char                i8;
-typedef unsigned char       u8;
-typedef short               i16;
-typedef unsigned short      u16;
-typedef int                 i32;
-typedef unsigned int        u32;
-typedef long long           i64;
-typedef unsigned long long  u64;
-typedef float               f32;
-typedef double              f64;
-typedef int                 b32;
-typedef bool                b8;
+﻿typedef char                int8_t;
+typedef unsigned char       uint8_t;
+typedef short               int16_t;
+typedef unsigned short      uint16_t;
+typedef int                 int32_t;
+typedef unsigned int        uint32_t;
+typedef long long           int64_t;
+typedef unsigned long long  uint64_t;
+typedef int                 BOOL;
 
 #define PM_REMOVE           0x0001
 #define WM_QUIT             0x0012
@@ -20,7 +17,7 @@ typedef bool                b8;
 #define WS_CAPTION          0x00C00000L
 #define WS_SYSMENU          0x00080000L
 #define WS_MINIMIZEBOX      0x00020000L
-#define CW_USEDEFAULT       ((i32)0x80000000)
+#define CW_USEDEFAULT       ((int32_t)0x80000000)
 
 #define INFINITE            0xFFFFFFFF
 
@@ -28,7 +25,7 @@ typedef bool                b8;
 #define SYNCHRONIZE              0x00100000L
 #define EVENT_ALL_ACCESS    (STANDARD_RIGHTS_REQUIRED|SYNCHRONIZE|0x3)
 
-#define MAKEINTRESOURCE(i) ((char *)((u64)((u16)(i))))
+#define MAKEINTRESOURCE(i) ((char *)((uint64_t)((uint16_t)(i))))
 
 #define IDC_ARROW MAKEINTRESOURCE(32512)
 
@@ -39,26 +36,26 @@ typedef bool                b8;
 
 struct POINT
 {
-    i32 x;
-    i32 y;
+    int32_t x;
+    int32_t y;
 };
 
 struct MSG
 {
-    void  *hwnd;
-    u32   message;
-    u64   wparam;
-    i64   lparam;
-    u32   time;
-    POINT pt;
+    void     *hwnd;
+    uint32_t message;
+    uint64_t wparam;
+    int64_t  lparam;
+    uint32_t time;
+    POINT    pt;
 };
 
 struct WNDCLASS
 {
-    u32        style;
+    uint32_t   style;
     void       *lpfnWndProc;
-    i32        cbClsExtra;
-    i32        cbWndExtra;
+    int32_t    cbClsExtra;
+    int32_t    cbWndExtra;
     void       *hInstance;
     void       *hIcon;
     void       *hCursor;
@@ -69,24 +66,24 @@ struct WNDCLASS
 
 struct RECT
 {
-    i32 left;
-    i32 top;
-    i32 right;
-    i32 bottom;
+    int32_t left;
+    int32_t top;
+    int32_t right;
+    int32_t bottom;
 };
 
 struct GUID
 {
-    u32 Data1;
-    u16 Data2;
-    u16 Data3;
-    u8  Data4[8];
+    uint32_t Data1;
+    uint16_t Data2;
+    uint16_t Data3;
+    uint8_t  Data4[8];
 };
 
 struct LUID
 {
-    u32 LowPart;
-    i32 HighPart;
+    uint32_t LowPart;
+    int32_t  HighPart;
 };
 
 #define	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES	( 0xffffffff )
@@ -223,12 +220,12 @@ enum DXGI_FORMAT
 
 struct DXGI_SAMPLE_DESC
 {
-    u32 Count;
-    u32 Quality;
+    uint32_t Count;
+    uint32_t Quality;
 };
 
 
-typedef u64 D3D12_GPU_VIRTUAL_ADDRESS;
+typedef uint64_t D3D12_GPU_VIRTUAL_ADDRESS;
 
 enum D3D12_HEAP_TYPE
 {
@@ -258,8 +255,8 @@ struct D3D12_HEAP_PROPERTIES
     D3D12_HEAP_TYPE         Type;
     D3D12_CPU_PAGE_PROPERTY CPUPageProperty;
     D3D12_MEMORY_POOL       MemoryPoolPreference;
-    u32                     CreationNodeMask;
-    u32                     VisibleNodeMask;
+    uint32_t                CreationNodeMask;
+    uint32_t                VisibleNodeMask;
 };
 
 enum D3D12_HEAP_FLAGS
@@ -280,16 +277,16 @@ enum D3D12_HEAP_FLAGS
 
 struct D3D12_HEAP_DESC
 {
-    u64                   SizeInBytes;
+    uint64_t              SizeInBytes;
     D3D12_HEAP_PROPERTIES Properties;
-    u64                   Alignment;
+    uint64_t              Alignment;
     D3D12_HEAP_FLAGS      Flags;
 };
 
 struct D3D12_RANGE
 {
-    u64 Begin;
-    u64 End;
+    uint64_t Begin;
+    uint64_t End;
 };
 
 enum D3D12_RESOURCE_DIMENSION
@@ -323,11 +320,11 @@ enum D3D12_RESOURCE_FLAGS
 struct D3D12_RESOURCE_DESC
 {
     D3D12_RESOURCE_DIMENSION Dimension;
-    u64                      Alignment;
-    u64                      Width;
-    u32                      Height;
-    u16                      DepthOrArraySize;
-    u16                      MipLevels;
+    uint64_t                 Alignment;
+    uint64_t                 Width;
+    uint32_t                 Height;
+    uint16_t                 DepthOrArraySize;
+    uint16_t                 MipLevels;
     DXGI_FORMAT              Format;
     DXGI_SAMPLE_DESC         SampleDesc;
     D3D12_TEXTURE_LAYOUT     Layout;
@@ -336,12 +333,12 @@ struct D3D12_RESOURCE_DESC
 
 struct D3D12_BOX
 {
-    u32 left;
-    u32 top;
-    u32 front;
-    u32 right;
-    u32 bottom;
-    u32 back;
+    uint32_t left;
+    uint32_t top;
+    uint32_t front;
+    uint32_t right;
+    uint32_t bottom;
+    uint32_t back;
 };
 
 enum D3D12_DESCRIPTOR_HEAP_TYPE
@@ -362,29 +359,29 @@ enum D3D12_DESCRIPTOR_HEAP_FLAGS
 struct D3D12_DESCRIPTOR_HEAP_DESC
 {
     D3D12_DESCRIPTOR_HEAP_TYPE  Type;
-    u32                         NumDescriptors;
+    uint32_t                    NumDescriptors;
     D3D12_DESCRIPTOR_HEAP_FLAGS Flags;
-    u32                         NodeMask;
+    uint32_t                    NodeMask;
 };
 
 struct D3D12_CPU_DESCRIPTOR_HANDLE
 {
-    u64 ptr;
+    uint64_t ptr;
 };
 
 struct D3D12_GPU_DESCRIPTOR_HANDLE
 {
-    u64 ptr;
+    uint64_t ptr;
 };
 
 typedef RECT D3D12_RECT;
 
 struct D3D12_DISCARD_REGION
 {
-    u32              NumRects;
+    uint32_t         NumRects;
     const D3D12_RECT *pRects;
-    u32              FirstSubresource;
-    u32              NumSubresources;
+    uint32_t         FirstSubresource;
+    uint32_t         NumSubresources;
 };
 
 enum D3D12_COMMAND_LIST_TYPE
@@ -398,15 +395,15 @@ enum D3D12_COMMAND_LIST_TYPE
 struct D3D12_SUBRESOURCE_FOOTPRINT
 {
     DXGI_FORMAT Format;
-    u32         Width;
-    u32         Height;
-    u32         Depth;
-    u32         RowPitch;
+    uint32_t    Width;
+    uint32_t    Height;
+    uint32_t    Depth;
+    uint32_t    RowPitch;
 };
 
 struct D3D12_PLACED_SUBRESOURCE_FOOTPRINT
 {
-    u64                         Offset;
+    uint64_t                    Offset;
     D3D12_SUBRESOURCE_FOOTPRINT Footprint;
 };
 
@@ -423,25 +420,25 @@ struct D3D12_TEXTURE_COPY_LOCATION
     union 
     {
         D3D12_PLACED_SUBRESOURCE_FOOTPRINT PlacedFootprint;
-        u32                                SubresourceIndex;
+        uint32_t                           SubresourceIndex;
     };
 };
 
 struct D3D12_TILED_RESOURCE_COORDINATE
 {
-    u32 X;
-    u32 Y;
-    u32 Z;
-    u32 Subresource;
+    uint32_t X;
+    uint32_t Y;
+    uint32_t Z;
+    uint32_t Subresource;
 };
 
 struct D3D12_TILE_REGION_SIZE
 {
-    u32 NumTiles;
-    b32 UseBox;
-    u32 Width;
-    u16 Height;
-    u16 Depth;
+    uint32_t NumTiles;
+    BOOL     UseBox;
+    uint32_t Width;
+    uint16_t Height;
+    uint16_t Depth;
 };
 
 enum D3D12_TILE_RANGE_FLAGS
@@ -454,17 +451,17 @@ enum D3D12_TILE_RANGE_FLAGS
 
 struct D3D12_SUBRESOURCE_TILING
 {
-    u32 WidthInTiles;
-    u16 HeightInTiles;
-    u16 DepthInTiles;
-    u32 StartTileIndexInOverallResource;
+    uint32_t WidthInTiles;
+    uint16_t HeightInTiles;
+    uint16_t DepthInTiles;
+    uint32_t StartTileIndexInOverallResource;
 };
 
 struct D3D12_TILE_SHAPE
 {
-    u32 WidthInTexels;
-    u32 HeightInTexels;
-    u32 DepthInTexels;
+    uint32_t WidthInTexels;
+    uint32_t HeightInTexels;
+    uint32_t DepthInTexels;
 };
 
 enum D3D12_TILE_MAPPING_FLAGS
@@ -513,7 +510,7 @@ enum D3D12_RESOURCE_BARRIER_TYPE
 struct D3D12_RESOURCE_TRANSITION_BARRIER
 {
     ID3D12Resource        *pResource;
-    u32                   Subresource;
+    uint32_t              Subresource;
     D3D12_RESOURCE_STATES StateBefore;
     D3D12_RESOURCE_STATES StateAfter;
 };
@@ -557,12 +554,12 @@ enum D3D12_INPUT_CLASSIFICATION
 struct D3D12_INPUT_ELEMENT_DESC
 {
     const char                 *SemanticName;
-    u32                        SemanticIndex;
+    uint32_t                   SemanticIndex;
     DXGI_FORMAT                Format;
-    u32                        InputSlot;
-    u32                        AlignedByteOffset;
+    uint32_t                   InputSlot;
+    uint32_t                   AlignedByteOffset;
     D3D12_INPUT_CLASSIFICATION InputSlotClass;
-    u32                        InstanceDataStepRate;
+    uint32_t                   InstanceDataStepRate;
 };
 
 enum D3D12_FILL_MODE
@@ -628,12 +625,12 @@ enum D3D12_PRIMITIVE_TOPOLOGY_TYPE
 
 struct D3D12_SO_DECLARATION_ENTRY
 {
-    u32        Stream;
+    uint32_t   Stream;
     const char *SemanticName;
-    u32        SemanticIndex;
-    u8         StartComponent;
-    u8         ComponentCount;
-    u8         OutputSlot;
+    uint32_t   SemanticIndex;
+    uint8_t    StartComponent;
+    uint8_t    ComponentCount;
+    uint8_t    OutputSlot;
 };
 
 enum D3D12_CULL_MODE
@@ -645,12 +642,12 @@ enum D3D12_CULL_MODE
 
 struct D3D12_VIEWPORT
 {
-    f32 TopLeftX;
-    f32 TopLeftY;
-    f32 Width;
-    f32 Height;
-    f32 MinDepth;
-    f32 MaxDepth;
+    float TopLeftX;
+    float TopLeftY;
+    float Width;
+    float Height;
+    float MinDepth;
+    float MaxDepth;
 };
 
 typedef RECT D3D12_RECT;
@@ -695,12 +692,12 @@ struct D3D12_DEPTH_STENCILOP_DESC
 
 struct D3D12_DEPTH_STENCIL_DESC
 {
-    b32                        DepthEnable;
+    BOOL                       DepthEnable;
     D3D12_DEPTH_WRITE_MASK     DepthWriteMask;
     D3D12_COMPARISON_FUNC      DepthFunc;
-    b32                        StencilEnable;
-    u8                         StencilReadMask;
-    u8                         StencilWriteMask;
+    BOOL                       StencilEnable;
+    uint8_t                    StencilReadMask;
+    uint8_t                    StencilWriteMask;
     D3D12_DEPTH_STENCILOP_DESC FrontFace;
     D3D12_DEPTH_STENCILOP_DESC BackFace;
 };
@@ -766,8 +763,8 @@ enum D3D12_LOGIC_OP
 
 struct D3D12_RENDER_TARGET_BLEND_DESC
 {
-    b32            BlendEnable;
-    b32            LogicOpEnable;
+    BOOL           BlendEnable;
+    BOOL           LogicOpEnable;
     D3D12_BLEND    SrcBlend;
     D3D12_BLEND    DestBlend;
     D3D12_BLEND_OP BlendOp;
@@ -775,13 +772,13 @@ struct D3D12_RENDER_TARGET_BLEND_DESC
     D3D12_BLEND    DestBlendAlpha;
     D3D12_BLEND_OP BlendOpAlpha;
     D3D12_LOGIC_OP LogicOp;
-    u8             RenderTargetWriteMask;
+    uint8_t        RenderTargetWriteMask;
 };
 
 struct D3D12_BLEND_DESC
 {
-    b32                            AlphaToCoverageEnable;
-    b32                            IndependentBlendEnable;
+    BOOL                           AlphaToCoverageEnable;
+    BOOL                           IndependentBlendEnable;
     D3D12_RENDER_TARGET_BLEND_DESC RenderTarget[8];
 };
 
@@ -795,14 +792,14 @@ struct D3D12_RASTERIZER_DESC
 {
     D3D12_FILL_MODE                       FillMode;
     D3D12_CULL_MODE                       CullMode;
-    b32                                   FrontCounterClockwise;
-    i32                                   DepthBias;
-    f32                                   DepthBiasClamp;
-    f32                                   SlopeScaledDepthBias;
-    b32                                   DepthClipEnable;
-    b32                                   MultisampleEnable;
-    b32                                   AntialiasedLineEnable;
-    u32                                   ForcedSampleCount;
+    BOOL                                  FrontCounterClockwise;
+    int32_t                               DepthBias;
+    float                                 DepthBiasClamp;
+    float                                 SlopeScaledDepthBias;
+    BOOL                                  DepthClipEnable;
+    BOOL                                  MultisampleEnable;
+    BOOL                                  AntialiasedLineEnable;
+    uint32_t                              ForcedSampleCount;
     D3D12_CONSERVATIVE_RASTERIZATION_MODE ConservativeRaster;
 };
 
@@ -817,8 +814,8 @@ enum D3D12_QUERY_HEAP_TYPE
 struct D3D12_QUERY_HEAP_DESC
 {
     D3D12_QUERY_HEAP_TYPE Type;
-    u32                   Count;
-    u32                   NodeMask;
+    uint32_t              Count;
+    uint32_t              NodeMask;
 };
 
 enum D3D12_QUERY_TYPE
@@ -841,67 +838,67 @@ enum D3D12_PREDICATION_OP
 
 struct D3D12_QUERY_DATA_PIPELINE_STATISTICS
 {
-    u64 IAVertices;
-    u64 IAPrimitives;
-    u64 VSInvocations;
-    u64 GSInvocations;
-    u64 GSPrimitives;
-    u64 CInvocations;
-    u64 CPrimitives;
-    u64 PSInvocations;
-    u64 HSInvocations;
-    u64 DSInvocations;
-    u64 CSInvocations;
+    uint64_t IAVertices;
+    uint64_t IAPrimitives;
+    uint64_t VSInvocations;
+    uint64_t GSInvocations;
+    uint64_t GSPrimitives;
+    uint64_t CInvocations;
+    uint64_t CPrimitives;
+    uint64_t PSInvocations;
+    uint64_t HSInvocations;
+    uint64_t DSInvocations;
+    uint64_t CSInvocations;
 };
 
 struct D3D12_QUERY_DATA_SO_STATISTICS
 {
-    u64 NumPrimitivesWritten;
-    u64 PrimitivesStorageNeeded;
+    uint64_t NumPrimitivesWritten;
+    uint64_t PrimitivesStorageNeeded;
 };
 
 struct D3D12_STREAM_OUTPUT_BUFFER_VIEW
 {
     D3D12_GPU_VIRTUAL_ADDRESS BufferLocation;
-    u64                       SizeInBytes;
+    uint64_t                  SizeInBytes;
     D3D12_GPU_VIRTUAL_ADDRESS BufferFilledSizeLocation;
 };
 
 struct D3D12_DRAW_ARGUMENTS
 {
-    u32 VertexCountPerInstance;
-    u32 InstanceCount;
-    u32 StartVertexLocation;
-    u32 StartInstanceLocation;
+    uint32_t VertexCountPerInstance;
+    uint32_t InstanceCount;
+    uint32_t StartVertexLocation;
+    uint32_t StartInstanceLocation;
 };
 
 struct D3D12_DRAW_INDEXED_ARGUMENTS
 {
-    u32 IndexCountPerInstance;
-    u32 InstanceCount;
-    u32 StartIndexLocation;
-    i32 BaseVertexLocation;
-    u32 StartInstanceLocation;
+    uint32_t IndexCountPerInstance;
+    uint32_t InstanceCount;
+    uint32_t StartIndexLocation;
+    int32_t  BaseVertexLocation;
+    uint32_t StartInstanceLocation;
 };
 
 struct D3D12_DISPATCH_ARGUMENTS
 {
-    u32 ThreadGroupCountX;
-    u32 ThreadGroupCountY;
-    u32 ThreadGroupCountZ;
+    uint32_t ThreadGroupCountX;
+    uint32_t ThreadGroupCountY;
+    uint32_t ThreadGroupCountZ;
 };
 
 struct D3D12_VERTEX_BUFFER_VIEW
 {
     D3D12_GPU_VIRTUAL_ADDRESS BufferLocation;
-    u32                       SizeInBytes;
-    u32                       StrideInBytes;
+    uint32_t                  SizeInBytes;
+    uint32_t                  StrideInBytes;
 };
 
 struct D3D12_INDEX_BUFFER_VIEW
 {
     D3D12_GPU_VIRTUAL_ADDRESS BufferLocation;
-    u32                       SizeInBytes;
+    uint32_t                  SizeInBytes;
     DXGI_FORMAT               Format;
 };
 
@@ -925,35 +922,35 @@ struct D3D12_INDIRECT_ARGUMENT_DESC
     {
         struct 
         {
-                                 u32 Slot;
+                                 uint32_t Slot;
         } VertexBuffer;
         struct 
         {
-                                 u32 RootParameterIndex;
-                                 u32 DestOffsetIn32BitValues;
-                                 u32 Num32BitValuesToSet;
+                                 uint32_t RootParameterIndex;
+                                 uint32_t DestOffsetIn32BitValues;
+                                 uint32_t Num32BitValuesToSet;
         } Constant;
         struct 
         {
-                                 u32 RootParameterIndex;
+                                 uint32_t RootParameterIndex;
         } ConstantBufferView;
         struct 
         {
-                                 u32 RootParameterIndex;
+                                 uint32_t RootParameterIndex;
         } ShaderResourceView;
         struct 
         {
-                                 u32 RootParameterIndex;
+                                 uint32_t RootParameterIndex;
         } UnorderedAccessView;
     };
 };
 
 struct D3D12_COMMAND_SIGNATURE_DESC
 {
-    u32                                ByteStride;
-    u32                                NumArgumentDescs;
+    uint32_t                           ByteStride;
+    uint32_t                           NumArgumentDescs;
     const D3D12_INDIRECT_ARGUMENT_DESC *pArgumentDescs;
-    u32                                NodeMask;
+    uint32_t                           NodeMask;
 };
 
 enum D3D12_CLEAR_FLAGS
@@ -977,30 +974,30 @@ enum D3D12_COMMAND_QUEUE_PRIORITY
 struct D3D12_COMMAND_QUEUE_DESC
 {
     D3D12_COMMAND_LIST_TYPE   Type;
-    i32                       Priority;
+    int32_t                   Priority;
     D3D12_COMMAND_QUEUE_FLAGS Flags;
-    u32                       NodeMask;
+    uint32_t                  NodeMask;
 };
 
 struct D3D12_SHADER_BYTECODE
 {
     const void *pShaderBytecode;
-    u64        BytecodeLength;
+    uint64_t   BytecodeLength;
 };
 
 struct D3D12_STREAM_OUTPUT_DESC
 {
     const D3D12_SO_DECLARATION_ENTRY *pSODeclaration;
-    u32                              NumEntries;
-    const u32                        *pBufferStrides;
-    u32                              NumStrides;
-    u32                              RasterizedStream;
+    uint32_t                         NumEntries;
+    const uint32_t                   *pBufferStrides;
+    uint32_t                         NumStrides;
+    uint32_t                         RasterizedStream;
 };
 
 struct D3D12_INPUT_LAYOUT_DESC
 {
     const D3D12_INPUT_ELEMENT_DESC *pInputElementDescs;
-    u32                            NumElements;
+    uint32_t                       NumElements;
 };
 
 enum D3D12_INDEX_BUFFER_STRIP_CUT_VALUE
@@ -1013,7 +1010,7 @@ enum D3D12_INDEX_BUFFER_STRIP_CUT_VALUE
 struct D3D12_CACHED_PIPELINE_STATE
 {
     const void *pCachedBlob;
-    u64        CachedBlobSizeInBytes;
+    uint64_t   CachedBlobSizeInBytes;
 };
 
 enum D3D12_PIPELINE_STATE_FLAGS
@@ -1032,17 +1029,17 @@ struct D3D12_GRAPHICS_PIPELINE_STATE_DESC
     D3D12_SHADER_BYTECODE              GS;
     D3D12_STREAM_OUTPUT_DESC           StreamOutput;
     D3D12_BLEND_DESC                   BlendState;
-    u32                                SampleMask;
+    uint32_t                           SampleMask;
     D3D12_RASTERIZER_DESC              RasterizerState;
     D3D12_DEPTH_STENCIL_DESC           DepthStencilState;
     D3D12_INPUT_LAYOUT_DESC            InputLayout;
     D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBStripCutValue;
     D3D12_PRIMITIVE_TOPOLOGY_TYPE      PrimitiveTopologyType;
-    u32                                NumRenderTargets;
+    uint32_t                           NumRenderTargets;
     DXGI_FORMAT                        RTVFormats[8];
     DXGI_FORMAT                        DSVFormat;
     DXGI_SAMPLE_DESC                   SampleDesc;
-    u32                                NodeMask;
+    uint32_t                           NodeMask;
     D3D12_CACHED_PIPELINE_STATE        CachedPSO;
     D3D12_PIPELINE_STATE_FLAGS         Flags;
 };
@@ -1051,7 +1048,7 @@ struct D3D12_COMPUTE_PIPELINE_STATE_DESC
 {
     ID3D12RootSignature         *pRootSignature;
     D3D12_SHADER_BYTECODE       CS;
-    u32                         NodeMask;
+    uint32_t                    NodeMask;
     D3D12_CACHED_PIPELINE_STATE CachedPSO;
     D3D12_PIPELINE_STATE_FLAGS  Flags;
 };
@@ -1172,31 +1169,31 @@ enum D3D12_RESOURCE_HEAP_TIER
 
 struct D3D12_FEATURE_DATA_D3D12_OPTIONS
 {
-    b32                                   DoublePrecisionFloatShaderOps;
-    b32                                   OutputMergerLogicOp;
+    BOOL                                  DoublePrecisionFloatShaderOps;
+    BOOL                                  OutputMergerLogicOp;
     D3D12_SHADER_MIN_PRECISION_SUPPORT    MinPrecisionSupport;
     D3D12_TILED_RESOURCES_TIER            TiledResourcesTier;
     D3D12_RESOURCE_BINDING_TIER           ResourceBindingTier;
-    b32                                   PSSpecifiedStencilRefSupported;
-    b32                                   TypedUAVLoadAdditionalFormats;
-    b32                                   ROVsSupported;
+    BOOL                                  PSSpecifiedStencilRefSupported;
+    BOOL                                  TypedUAVLoadAdditionalFormats;
+    BOOL                                  ROVsSupported;
     D3D12_CONSERVATIVE_RASTERIZATION_TIER ConservativeRasterizationTier;
-    u32                                   MaxGPUVirtualAddressBitsPerResource;
-    b32                                   StandardSwizzle64KBSupported;
+    uint32_t                              MaxGPUVirtualAddressBitsPerResource;
+    BOOL                                  StandardSwizzle64KBSupported;
     D3D12_CROSS_NODE_SHARING_TIER         CrossNodeSharingTier;
-    b32                                   CrossAdapterRowMajorTextureSupported;
-    b32                                   VPAndRTArrayIndexFromAnyShaderFeedingRasterizerSupportedWithoutGSEmulation;
+    BOOL                                  CrossAdapterRowMajorTextureSupported;
+    BOOL                                  VPAndRTArrayIndexFromAnyShaderFeedingRasterizerSupportedWithoutGSEmulation;
     D3D12_RESOURCE_HEAP_TIER              ResourceHeapTier;
 };
 
 struct D3D12_FEATURE_DATA_D3D12_OPTIONS1
 {
-    b32 WaveOps;
-    u32 WaveLaneCountMin;
-    u32 WaveLaneCountMax;
-    u32 TotalLaneCount;
-    b32 ExpandedComputeResourceStates;
-    b32 Int64ShaderOps;
+    BOOL     WaveOps;
+    uint32_t WaveLaneCountMin;
+    uint32_t WaveLaneCountMax;
+    uint32_t TotalLaneCount;
+    BOOL     ExpandedComputeResourceStates;
+    BOOL     Int64ShaderOps;
 };
 
 enum D3D_ROOT_SIGNATURE_VERSION
@@ -1213,10 +1210,10 @@ struct D3D12_FEATURE_DATA_ROOT_SIGNATURE
 
 struct D3D12_FEATURE_DATA_ARCHITECTURE
 {
-    u32 NodeIndex;
-    b32 TileBasedRenderer;
-    b32 UMA;
-    b32 CacheCoherentUMA;
+    uint32_t NodeIndex;
+    BOOL     TileBasedRenderer;
+    BOOL     UMA;
+    BOOL     CacheCoherentUMA;
 };
 
 enum D3D_FEATURE_LEVEL
@@ -1234,7 +1231,7 @@ enum D3D_FEATURE_LEVEL
 
 struct D3D12_FEATURE_DATA_FEATURE_LEVELS
 {
-    u32                     NumFeatureLevels;
+    uint32_t                NumFeatureLevels;
     const D3D_FEATURE_LEVEL *pFeatureLevelsRequested;
     D3D_FEATURE_LEVEL       MaxSupportedFeatureLevel;
 };
@@ -1260,27 +1257,27 @@ struct D3D12_FEATURE_DATA_FORMAT_SUPPORT
 struct D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS
 {
     DXGI_FORMAT                           Format;
-    u32                                   SampleCount;
+    uint32_t                              SampleCount;
     D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS Flags;
-    u32                                   NumQualityLevels;
+    uint32_t                              NumQualityLevels;
 };
 
 struct D3D12_FEATURE_DATA_FORMAT_INFO
 {
     DXGI_FORMAT Format;
-    u8          PlaneCount;
+    uint8_t     PlaneCount;
 };
 
 struct D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT
 {
-    u32 MaxGPUVirtualAddressBitsPerResource;
-    u32 MaxGPUVirtualAddressBitsPerProcess;
+    uint32_t MaxGPUVirtualAddressBitsPerResource;
+    uint32_t MaxGPUVirtualAddressBitsPerProcess;
 };
 
 struct D3D12_RESOURCE_ALLOCATION_INFO
 {
-    u64 SizeInBytes;
-    u64 Alignment;
+    uint64_t SizeInBytes;
+    uint64_t Alignment;
 };
 
 enum D3D12_SHADER_COMPONENT_MAPPING
@@ -1312,78 +1309,78 @@ enum D3D12_BUFFER_SRV_FLAGS
 
 struct D3D12_BUFFER_SRV
 {
-    u64                    FirstElement;
-    u32                    NumElements;
-    u32                    StructureByteStride;
+    uint64_t               FirstElement;
+    uint32_t               NumElements;
+    uint32_t               StructureByteStride;
     D3D12_BUFFER_SRV_FLAGS Flags;
 };
 
 struct D3D12_TEX1D_SRV
 {
-    u32 MostDetailedMip;
-    u32 MipLevels;
-    f32 ResourceMinLODClamp;
+    uint32_t MostDetailedMip;
+    uint32_t MipLevels;
+    float    ResourceMinLODClamp;
 };
 
 struct D3D12_TEX1D_ARRAY_SRV
 {
-    u32 MostDetailedMip;
-    u32 MipLevels;
-    u32 FirstArraySlice;
-    u32 ArraySize;
-    f32 ResourceMinLODClamp;
+    uint32_t MostDetailedMip;
+    uint32_t MipLevels;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
+    float    ResourceMinLODClamp;
 };
 
 struct D3D12_TEX2D_SRV
 {
-    u32 MostDetailedMip;
-    u32 MipLevels;
-    u32 PlaneSlice;
-    f32 ResourceMinLODClamp;
+    uint32_t MostDetailedMip;
+    uint32_t MipLevels;
+    uint32_t PlaneSlice;
+    float    ResourceMinLODClamp;
 };
 
 struct D3D12_TEX2D_ARRAY_SRV
 {
-    u32 MostDetailedMip;
-    u32 MipLevels;
-    u32 FirstArraySlice;
-    u32 ArraySize;
-    u32 PlaneSlice;
-    f32 ResourceMinLODClamp;
+    uint32_t MostDetailedMip;
+    uint32_t MipLevels;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
+    uint32_t PlaneSlice;
+    float    ResourceMinLODClamp;
 };
 
 struct D3D12_TEX3D_SRV
 {
-    u32 MostDetailedMip;
-    u32 MipLevels;
-    f32 ResourceMinLODClamp;
+    uint32_t MostDetailedMip;
+    uint32_t MipLevels;
+    float    ResourceMinLODClamp;
 };
 
 struct D3D12_TEXCUBE_SRV
 {
-    u32 MostDetailedMip;
-    u32 MipLevels;
-    f32 ResourceMinLODClamp;
+    uint32_t MostDetailedMip;
+    uint32_t MipLevels;
+    float    ResourceMinLODClamp;
 };
 
 struct D3D12_TEXCUBE_ARRAY_SRV
 {
-    u32 MostDetailedMip;
-    u32 MipLevels;
-    u32 First2DArrayFace;
-    u32 NumCubes;
-    f32 ResourceMinLODClamp;
+    uint32_t MostDetailedMip;
+    uint32_t MipLevels;
+    uint32_t First2DArrayFace;
+    uint32_t NumCubes;
+    float    ResourceMinLODClamp;
 };
 
 struct D3D12_TEX2DMS_SRV
 {
-    u32 UnusedField_NothingToDefine;
+    uint32_t UnusedField_NothingToDefine;
 };
 
 struct D3D12_TEX2DMS_ARRAY_SRV
 {
-    u32 FirstArraySlice;
-    u32 ArraySize;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
 };
 
 enum D3D12_SRV_DIMENSION
@@ -1405,7 +1402,7 @@ struct D3D12_SHADER_RESOURCE_VIEW_DESC
 {
     DXGI_FORMAT                 Format;
     D3D12_SRV_DIMENSION         ViewDimension;
-    u32                         Shader4ComponentMapping;
+    uint32_t                    Shader4ComponentMapping;
     union
     {
         D3D12_BUFFER_SRV        Buffer;
@@ -1531,18 +1528,18 @@ struct D3D12_SAMPLER_DESC
     D3D12_TEXTURE_ADDRESS_MODE AddressU;
     D3D12_TEXTURE_ADDRESS_MODE AddressV;
     D3D12_TEXTURE_ADDRESS_MODE AddressW;
-    f32                        MipLODBias;
-    u32                        MaxAnisotropy;
+    float                      MipLODBias;
+    uint32_t                   MaxAnisotropy;
     D3D12_COMPARISON_FUNC      ComparisonFunc;
-    f32                        BorderColor[4];
-    f32                        MinLOD;
-    f32                        MaxLOD;
+    float                      BorderColor[4];
+    float                      MinLOD;
+    float                      MaxLOD;
 };
 
 struct D3D12_CONSTANT_BUFFER_VIEW_DESC
 {
     D3D12_GPU_VIRTUAL_ADDRESS BufferLocation;
-    u32                       SizeInBytes;
+    uint32_t                  SizeInBytes;
 };
 
 enum D3D12_BUFFER_UAV_FLAGS
@@ -1553,44 +1550,44 @@ enum D3D12_BUFFER_UAV_FLAGS
 
 struct D3D12_BUFFER_UAV
 {
-    u64                    FirstElement;
-    u32                    NumElements;
-    u32                    StructureByteStride;
-    u64                    CounterOffsetInBytes;
+    uint64_t               FirstElement;
+    uint32_t               NumElements;
+    uint32_t               StructureByteStride;
+    uint64_t               CounterOffsetInBytes;
     D3D12_BUFFER_UAV_FLAGS Flags;
 };
 
 struct D3D12_TEX1D_UAV
 {
-    u32 MipSlice;
+    uint32_t MipSlice;
 };
 
 struct D3D12_TEX1D_ARRAY_UAV
 {
-    u32 MipSlice;
-    u32 FirstArraySlice;
-    u32 ArraySize;
+    uint32_t MipSlice;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
 };
 
 struct D3D12_TEX2D_UAV
 {
-    u32 MipSlice;
-    u32 PlaneSlice;
+    uint32_t MipSlice;
+    uint32_t PlaneSlice;
 };
 
 struct D3D12_TEX2D_ARRAY_UAV
 {
-    u32 MipSlice;
-    u32 FirstArraySlice;
-    u32 ArraySize;
-    u32 PlaneSlice;
+    uint32_t MipSlice;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
+    uint32_t PlaneSlice;
 };
 
 struct D3D12_TEX3D_UAV
 {
-    u32 MipSlice;
-    u32 FirstWSlice;
-    u32 WSize;
+    uint32_t MipSlice;
+    uint32_t FirstWSlice;
+    uint32_t WSize;
 };
 
 enum D3D12_UAV_DIMENSION
@@ -1621,52 +1618,52 @@ struct D3D12_UNORDERED_ACCESS_VIEW_DESC
 
 struct D3D12_BUFFER_RTV
 {
-    u64 FirstElement;
-    u32 NumElements;
+    uint64_t FirstElement;
+    uint32_t NumElements;
 };
 
 struct D3D12_TEX1D_RTV
 {
-    u32 MipSlice;
+    uint32_t MipSlice;
 };
 
 struct D3D12_TEX1D_ARRAY_RTV
 {
-    u32 MipSlice;
-    u32 FirstArraySlice;
-    u32 ArraySize;
+    uint32_t MipSlice;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
 };
 
 struct D3D12_TEX2D_RTV
 {
-    u32 MipSlice;
-    u32 PlaneSlice;
+    uint32_t MipSlice;
+    uint32_t PlaneSlice;
 };
 
 struct D3D12_TEX2DMS_RTV
 {
-    u32 UnusedField_NothingToDefine;
+    uint32_t UnusedField_NothingToDefine;
 };
 
 struct D3D12_TEX2D_ARRAY_RTV
 {
-    u32 MipSlice;
-    u32 FirstArraySlice;
-    u32 ArraySize;
-    u32 PlaneSlice;
+    uint32_t MipSlice;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
+    uint32_t PlaneSlice;
 };
 
 struct D3D12_TEX2DMS_ARRAY_RTV
 {
-    u32 FirstArraySlice;
-    u32 ArraySize;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
 };
 
 struct D3D12_TEX3D_RTV
 {
-    u32 MipSlice;
-    u32 FirstWSlice;
-    u32 WSize;
+    uint32_t MipSlice;
+    uint32_t FirstWSlice;
+    uint32_t WSize;
 };
 
 enum D3D12_RTV_DIMENSION
@@ -1701,37 +1698,37 @@ struct D3D12_RENDER_TARGET_VIEW_DESC
 
 struct D3D12_TEX1D_DSV
 {
-    u32 MipSlice;
+    uint32_t MipSlice;
 };
 
 struct D3D12_TEX1D_ARRAY_DSV
 {
-    u32 MipSlice;
-    u32 FirstArraySlice;
-    u32 ArraySize;
+    uint32_t MipSlice;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
 };
 
 struct D3D12_TEX2D_DSV
 {
-    u32 MipSlice;
+    uint32_t MipSlice;
 };
 
 struct D3D12_TEX2D_ARRAY_DSV
 {
-    u32 MipSlice;
-    u32 FirstArraySlice;
-    u32 ArraySize;
+    uint32_t MipSlice;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
 };
 
 struct D3D12_TEX2DMS_DSV
 {
-    u32 UnusedField_NothingToDefine;
+    uint32_t UnusedField_NothingToDefine;
 };
 
 struct D3D12_TEX2DMS_ARRAY_DSV
 {
-    u32 FirstArraySlice;
-    u32 ArraySize;
+    uint32_t FirstArraySlice;
+    uint32_t ArraySize;
 };
 
 enum D3D12_DSV_FLAGS
@@ -1770,8 +1767,8 @@ struct D3D12_DEPTH_STENCIL_VIEW_DESC
 
 struct D3D12_DEPTH_STENCIL_VALUE
 {
-    f32 Depth;
-    u8  Stencil;
+    float Depth;
+    uint8_t  Stencil;
 };
 
 struct D3D12_CLEAR_VALUE
@@ -1779,16 +1776,16 @@ struct D3D12_CLEAR_VALUE
     DXGI_FORMAT Format;
     union 
     {
-        f32                       Color[4];
+        float                     Color[4];
         D3D12_DEPTH_STENCIL_VALUE DepthStencil;
     };
 };
 
 struct SECURITY_ATTRIBUTES
 {
-    u32  nLength;
-    void *lpSecurityDescriptor;
-    b32  bInheritHandle;
+    uint32_t nLength;
+    void     *lpSecurityDescriptor;
+    BOOL     bInheritHandle;
 };
 
 enum D3D12_FENCE_FLAGS
@@ -1800,52 +1797,52 @@ enum D3D12_FENCE_FLAGS
 
 struct D3D12_PACKED_MIP_INFO
 {
-    u8  NumStandardMips;
-    u8  NumPackedMips;
-    u32 NumTilesForPackedMips;
-    u32 StartTileIndexInOverallResource;
+    uint8_t  NumStandardMips;
+    uint8_t  NumPackedMips;
+    uint32_t NumTilesForPackedMips;
+    uint32_t StartTileIndexInOverallResource;
 };
 
 struct D3D12_SUBRESOURCE_DATA
 {
     const void *pData;
-    i64        RowPitch;
-    i64        SlicePitch;
+    int64_t    RowPitch;
+    int64_t    SlicePitch;
 };
 
 struct D3D12_MEMCPY_DEST
 {
-    void *pData;
-    u64  RowPitch;
-    u64  SlicePitch;
+    void     *pData;
+    uint64_t RowPitch;
+    uint64_t SlicePitch;
 };
 
 
 struct IUnknown
 {
-    virtual i32 STDCALL QueryInterface(const GUID &riid, void **ppvObject) = 0;
-    virtual u32 STDCALL AddRef() = 0;
-    virtual u32 STDCALL Release() = 0;
+    virtual int32_t STDCALL QueryInterface(const GUID &riid, void **ppvObject) = 0;
+    virtual uint32_t STDCALL AddRef() = 0;
+    virtual uint32_t STDCALL Release() = 0;
 };
 
 
 struct ID3DBlob : public IUnknown
 {
     virtual void * STDCALL GetBufferPointer() = 0;
-    virtual u64    STDCALL GetBufferSize() = 0;
+    virtual uint64_t    STDCALL GetBufferSize() = 0;
 };
 
 struct ID3D12Object : public IUnknown
 {
-    virtual i32 STDCALL GetPrivateData(const GUID &guid, u32 *pDataSize, void *pData) = 0;
-    virtual i32 STDCALL SetPrivateData(const GUID &guid, u32 DataSize, const void *pData) = 0;
-    virtual i32 STDCALL SetPrivateDataInterface(const GUID &guid, const IUnknown *pData) = 0;
-    virtual i32 STDCALL SetName(const wchar_t *Name) = 0;
+    virtual int32_t STDCALL GetPrivateData(const GUID &guid, uint32_t *pDataSize, void *pData) = 0;
+    virtual int32_t STDCALL SetPrivateData(const GUID &guid, uint32_t DataSize, const void *pData) = 0;
+    virtual int32_t STDCALL SetPrivateDataInterface(const GUID &guid, const IUnknown *pData) = 0;
+    virtual int32_t STDCALL SetName(const wchar_t *Name) = 0;
 };
 
 struct ID3D12DeviceChild : public ID3D12Object
 {
-    virtual i32 STDCALL GetDevice(const GUID &riid, void **ppvDevice) = 0;
+    virtual int32_t STDCALL GetDevice(const GUID &riid, void **ppvDevice) = 0;
 };
 
 struct ID3D12RootSignature : public ID3D12DeviceChild
@@ -1863,35 +1860,35 @@ struct ID3D12Heap : public ID3D12Pageable
 
 struct ID3D12Resource : public ID3D12Pageable
 {
-    virtual i32                       STDCALL Map(u32 Subresource, const D3D12_RANGE *pReadRange, void **ppData) = 0;
-    virtual void                      STDCALL Unmap(u32 Subresource, const D3D12_RANGE *pWrittenRange) = 0;
+    virtual int32_t                   STDCALL Map(uint32_t Subresource, const D3D12_RANGE *pReadRange, void **ppData) = 0;
+    virtual void                      STDCALL Unmap(uint32_t Subresource, const D3D12_RANGE *pWrittenRange) = 0;
     virtual D3D12_RESOURCE_DESC       STDCALL GetDesc() = 0;
     virtual D3D12_GPU_VIRTUAL_ADDRESS STDCALL GetGPUVirtualAddress() = 0;
-    virtual i32                       STDCALL WriteToSubresource(u32 DstSubresource, const D3D12_BOX *pDstBox,
-                                                                 const void *pSrcData, u32 SrcRowPitch,
-                                                                 u32 SrcDepthPitch) = 0;
-    virtual i32                       STDCALL ReadFromSubresource(void *pDstData, u32 DstRowPitch,
-                                                                  u32 DstDepthPitch, u32 SrcSubresource,
+    virtual int32_t                   STDCALL WriteToSubresource(uint32_t DstSubresource, const D3D12_BOX *pDstBox,
+                                                                 const void *pSrcData, uint32_t SrcRowPitch,
+                                                                 uint32_t SrcDepthPitch) = 0;
+    virtual int32_t                   STDCALL ReadFromSubresource(void *pDstData, uint32_t DstRowPitch,
+                                                                  uint32_t DstDepthPitch, uint32_t SrcSubresource,
                                                                   const D3D12_BOX *pSrcBox) = 0;
-    virtual i32                       STDCALL GetHeapProperties(D3D12_HEAP_PROPERTIES *pHeapProperties,
+    virtual int32_t                   STDCALL GetHeapProperties(D3D12_HEAP_PROPERTIES *pHeapProperties,
                                                                 D3D12_HEAP_FLAGS *pHeapFlags) = 0;
 };
 
 struct ID3D12CommandAllocator : public ID3D12Pageable
 {
-    virtual i32 STDCALL Reset() = 0;
+    virtual int32_t STDCALL Reset() = 0;
 };
 
 struct ID3D12Fence : public ID3D12Pageable
 {
-    virtual u64 STDCALL GetCompletedValue() = 0;
-    virtual i32 STDCALL SetEventOnCompletion(u64 Value, void *hEvent) = 0;
-    virtual i32 STDCALL Signal(u64 Value) = 0;
+    virtual uint64_t STDCALL GetCompletedValue() = 0;
+    virtual int32_t  STDCALL SetEventOnCompletion(uint64_t Value, void *hEvent) = 0;
+    virtual int32_t  STDCALL Signal(uint64_t Value) = 0;
 };
 
 struct ID3D12PipelineState : public ID3D12Pageable
 {
-    virtual i32 STDCALL GetCachedBlob(ID3DBlob **ppBlob) = 0;
+    virtual int32_t STDCALL GetCachedBlob(ID3DBlob **ppBlob) = 0;
 };
 
 struct ID3D12DescriptorHeap : public ID3D12Pageable
@@ -1916,87 +1913,87 @@ struct ID3D12CommandList : public ID3D12DeviceChild
 
 struct ID3D12GraphicsCommandList : public ID3D12CommandList
 {
-    virtual i32  STDCALL Close() = 0;
-    virtual i32  STDCALL Reset(ID3D12CommandAllocator *pAllocator, ID3D12PipelineState *pInitialState) = 0;
-    virtual void STDCALL ClearState(ID3D12PipelineState *pPipelineState) = 0;
-    virtual void STDCALL DrawInstanced(u32 VertexCountPerInstance, u32 InstanceCount, u32 StartVertexLocation,
-                                       u32 StartInstanceLocation) = 0;
-    virtual void STDCALL DrawIndexedInstanced(u32 IndexCountPerInstance, u32 InstanceCount, u32 StartIndexLocation, i32 BaseVertexLocation,
-                                              u32 StartInstanceLocation) = 0;
-    virtual void STDCALL Dispatch(u32 ThreadGroupCountX, u32 ThreadGroupCountY, u32 ThreadGroupCountZ) = 0;
-    virtual void STDCALL CopyBufferRegion(ID3D12Resource *pDstBuffer, u64 DstOffset, ID3D12Resource *pSrcBuffer, u64 SrcOffset,
-                                          u64 NumBytes) = 0;
-    virtual void STDCALL CopyTextureRegion(const D3D12_TEXTURE_COPY_LOCATION *pDst, u32 DstX, u32 DstY, u32 DstZ,
-                                           const D3D12_TEXTURE_COPY_LOCATION *pSrc,
-                                           const D3D12_BOX *pSrcBox) = 0;
-    virtual void STDCALL CopyResource(ID3D12Resource *pDstResource, ID3D12Resource *pSrcResource) = 0;
-    virtual void STDCALL CopyTiles(ID3D12Resource *pTiledResource, const D3D12_TILED_RESOURCE_COORDINATE *pTileRegionStartCoordinate,
-                                   const D3D12_TILE_REGION_SIZE *pTileRegionSize, ID3D12Resource *pBuffer,
-                                   u64 BufferStartOffsetInBytes, D3D12_TILE_COPY_FLAGS Flags) = 0;
-    virtual void STDCALL ResolveSubresource(ID3D12Resource *pDstResource, u32 DstSubresource, ID3D12Resource *pSrcResource,
-                                            u32 SrcSubresource, DXGI_FORMAT Format) = 0;
-    virtual void STDCALL IASetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology) = 0;
-    virtual void STDCALL RSSetViewports(u32 NumViewports, const D3D12_VIEWPORT *pViewports) = 0;
-    virtual void STDCALL RSSetScissorRects(u32 NumRects, const D3D12_RECT *pRects) = 0;
-    virtual void STDCALL OMSetBlendFactor(const f32 BlendFactor[4]) = 0;
-    virtual void STDCALL OMSetStencilRef(u32 StencilRef) = 0;
-    virtual void STDCALL SetPipelineState(ID3D12PipelineState *pPipelineState) = 0;
-    virtual void STDCALL ResourceBarrier(u32 NumBarriers, const D3D12_RESOURCE_BARRIER *pBarriers) = 0;
-    virtual void STDCALL ExecuteBundle(ID3D12GraphicsCommandList *pCommandList) = 0;
-    virtual void STDCALL SetDescriptorHeaps(u32 NumDescriptorHeaps, ID3D12DescriptorHeap *const *ppDescriptorHeaps) = 0;
-    virtual void STDCALL SetComputeRootSignature(ID3D12RootSignature *pRootSignature) = 0;
-    virtual void STDCALL SetGraphicsRootSignature(ID3D12RootSignature *pRootSignature) = 0; 
-    virtual void STDCALL SetComputeRootDescriptorTable(u32 RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) = 0;
-    virtual void STDCALL SetGraphicsRootDescriptorTable(u32 RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) = 0;
-    virtual void STDCALL SetComputeRoot32BitConstant(u32 RootParameterIndex, u32 SrcData, u32 DestOffsetIn32BitValues) = 0;
-    virtual void STDCALL SetGraphicsRoot32BitConstant(u32 RootParameterIndex, u32 SrcData, u32 DestOffsetIn32BitValues) = 0;
-    virtual void STDCALL SetComputeRoot32BitConstants(u32 RootParameterIndex, u32 Num32BitValuesToSet, const void *pSrcData,
-                                                      u32 DestOffsetIn32BitValues) = 0;
-    virtual void STDCALL SetGraphicsRoot32BitConstants(u32 RootParameterIndex, u32 Num32BitValuesToSet, const void *pSrcData,
-                                                       u32 DestOffsetIn32BitValues) = 0;
-    virtual void STDCALL SetComputeRootConstantBufferView(u32 RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
-    virtual void STDCALL SetGraphicsRootConstantBufferView(u32 RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
-    virtual void STDCALL SetComputeRootShaderResourceView(u32 RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
-    virtual void STDCALL SetGraphicsRootShaderResourceView(u32 RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
-    virtual void STDCALL SetComputeRootUnorderedAccessView(u32 RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
-    virtual void STDCALL SetGraphicsRootUnorderedAccessView(u32 RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
-    virtual void STDCALL IASetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW *pView) = 0;
-    virtual void STDCALL IASetVertexBuffers(u32 StartSlot, u32 NumViews, const D3D12_VERTEX_BUFFER_VIEW *pViews) = 0;
-    virtual void STDCALL SOSetTargets(u32 StartSlot, u32 NumViews, const D3D12_STREAM_OUTPUT_BUFFER_VIEW *pViews) = 0;
-    virtual void STDCALL OMSetRenderTargets(u32 NumRenderTargetDescriptors, const D3D12_CPU_DESCRIPTOR_HANDLE *pRenderTargetDescriptors,
-                                            b32 RTsSingleHandleToDescriptorRange,
-                                            const D3D12_CPU_DESCRIPTOR_HANDLE *pDepthStencilDescriptor) = 0;
-    virtual void STDCALL ClearDepthStencilView(D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView, D3D12_CLEAR_FLAGS ClearFlags, f32 Depth,
-                                               u8 Stencil, u32 NumRects, const D3D12_RECT *pRects) = 0;
-    virtual void STDCALL ClearRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE RenderTargetView, const f32 ColorRGBA[4], u32 NumRects,
-                                               const D3D12_RECT *pRects) = 0;
-    virtual void STDCALL ClearUnorderedAccessViewUint(D3D12_GPU_DESCRIPTOR_HANDLE ViewGPUHandleInCurrentHeap,
-                                                      D3D12_CPU_DESCRIPTOR_HANDLE ViewCPUHandle, ID3D12Resource *pResource,
-                                                      const u32 Values[4], u32 NumRects, const D3D12_RECT *pRects) = 0;
-    virtual void STDCALL ClearUnorderedAccessViewFloat(D3D12_GPU_DESCRIPTOR_HANDLE ViewGPUHandleInCurrentHeap,
-                                                       D3D12_CPU_DESCRIPTOR_HANDLE ViewCPUHandle, ID3D12Resource *pResource,
-                                                       const f32 Values[ 4 ], u32 NumRects, const D3D12_RECT *pRects) = 0;
-    virtual void STDCALL DiscardResource(ID3D12Resource *pResource, const D3D12_DISCARD_REGION *pRegion) = 0;
-    virtual void STDCALL BeginQuery(ID3D12QueryHeap *pQueryHeap, D3D12_QUERY_TYPE Type, u32 Index) = 0;
-    virtual void STDCALL EndQuery(ID3D12QueryHeap *pQueryHeap, D3D12_QUERY_TYPE Type, u32 Index) = 0;
-    virtual void STDCALL ResolveQueryData(ID3D12QueryHeap *pQueryHeap, D3D12_QUERY_TYPE Type, u32 StartIndex, u32 NumQueries,
-                                          ID3D12Resource *pDestinationBuffer,
-                                          u64 AlignedDestinationBufferOffset) = 0;
-    virtual void STDCALL SetPredication(ID3D12Resource *pBuffer, u64 AlignedBufferOffset, D3D12_PREDICATION_OP Operation) = 0;
-    virtual void STDCALL SetMarker(u32 Metadata, const void *pData, u32 Size) = 0;
-    virtual void STDCALL BeginEvent(u32 Metadata, const void *pData, u32 Size) = 0;
-    virtual void STDCALL EndEvent() = 0;
-    virtual void STDCALL ExecuteIndirect(ID3D12CommandSignature *pCommandSignature, u32 MaxCommandCount, ID3D12Resource *pArgumentBuffer,
-                                         u64 ArgumentBufferOffset, ID3D12Resource *pCountBuffer, u64 CountBufferOffset) = 0;
+    virtual int32_t STDCALL Close() = 0;
+    virtual int32_t STDCALL Reset(ID3D12CommandAllocator *pAllocator, ID3D12PipelineState *pInitialState) = 0;
+    virtual void    STDCALL ClearState(ID3D12PipelineState *pPipelineState) = 0;
+    virtual void    STDCALL DrawInstanced(uint32_t VertexCountPerInstance, uint32_t InstanceCount, uint32_t StartVertexLocation,
+                                          uint32_t StartInstanceLocation) = 0;
+    virtual void    STDCALL DrawIndexedInstanced(uint32_t IndexCountPerInstance, uint32_t InstanceCount, uint32_t StartIndexLocation, int32_t BaseVertexLocation,
+                                                 uint32_t StartInstanceLocation) = 0;
+    virtual void    STDCALL Dispatch(uint32_t ThreadGroupCountX, uint32_t ThreadGroupCountY, uint32_t ThreadGroupCountZ) = 0;
+    virtual void    STDCALL CopyBufferRegion(ID3D12Resource *pDstBuffer, uint64_t DstOffset, ID3D12Resource *pSrcBuffer, uint64_t SrcOffset,
+                                             uint64_t NumBytes) = 0;
+    virtual void    STDCALL CopyTextureRegion(const D3D12_TEXTURE_COPY_LOCATION *pDst, uint32_t DstX, uint32_t DstY, uint32_t DstZ,
+                                              const D3D12_TEXTURE_COPY_LOCATION *pSrc,
+                                              const D3D12_BOX *pSrcBox) = 0;
+    virtual void    STDCALL CopyResource(ID3D12Resource *pDstResource, ID3D12Resource *pSrcResource) = 0;
+    virtual void    STDCALL CopyTiles(ID3D12Resource *pTiledResource, const D3D12_TILED_RESOURCE_COORDINATE *pTileRegionStartCoordinate,
+                                      const D3D12_TILE_REGION_SIZE *pTileRegionSize, ID3D12Resource *pBuffer,
+                                      uint64_t BufferStartOffsetInBytes, D3D12_TILE_COPY_FLAGS Flags) = 0;
+    virtual void    STDCALL ResolveSubresource(ID3D12Resource *pDstResource, uint32_t DstSubresource, ID3D12Resource *pSrcResource,
+                                               uint32_t SrcSubresource, DXGI_FORMAT Format) = 0;
+    virtual void    STDCALL IASetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology) = 0;
+    virtual void    STDCALL RSSetViewports(uint32_t NumViewports, const D3D12_VIEWPORT *pViewports) = 0;
+    virtual void    STDCALL RSSetScissorRects(uint32_t NumRects, const D3D12_RECT *pRects) = 0;
+    virtual void    STDCALL OMSetBlendFactor(const float BlendFactor[4]) = 0;
+    virtual void    STDCALL OMSetStencilRef(uint32_t StencilRef) = 0;
+    virtual void    STDCALL SetPipelineState(ID3D12PipelineState *pPipelineState) = 0;
+    virtual void    STDCALL ResourceBarrier(uint32_t NumBarriers, const D3D12_RESOURCE_BARRIER *pBarriers) = 0;
+    virtual void    STDCALL ExecuteBundle(ID3D12GraphicsCommandList *pCommandList) = 0;
+    virtual void    STDCALL SetDescriptorHeaps(uint32_t NumDescriptorHeaps, ID3D12DescriptorHeap *const *ppDescriptorHeaps) = 0;
+    virtual void    STDCALL SetComputeRootSignature(ID3D12RootSignature *pRootSignature) = 0;
+    virtual void    STDCALL SetGraphicsRootSignature(ID3D12RootSignature *pRootSignature) = 0; 
+    virtual void    STDCALL SetComputeRootDescriptorTable(uint32_t RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) = 0;
+    virtual void    STDCALL SetGraphicsRootDescriptorTable(uint32_t RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) = 0;
+    virtual void    STDCALL SetComputeRoot32BitConstant(uint32_t RootParameterIndex, uint32_t SrcData, uint32_t DestOffsetIn32BitValues) = 0;
+    virtual void    STDCALL SetGraphicsRoot32BitConstant(uint32_t RootParameterIndex, uint32_t SrcData, uint32_t DestOffsetIn32BitValues) = 0;
+    virtual void    STDCALL SetComputeRoot32BitConstants(uint32_t RootParameterIndex, uint32_t Num32BitValuesToSet, const void *pSrcData,
+                                                         uint32_t DestOffsetIn32BitValues) = 0;
+    virtual void    STDCALL SetGraphicsRoot32BitConstants(uint32_t RootParameterIndex, uint32_t Num32BitValuesToSet, const void *pSrcData,
+                                                          uint32_t DestOffsetIn32BitValues) = 0;
+    virtual void    STDCALL SetComputeRootConstantBufferView(uint32_t RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
+    virtual void    STDCALL SetGraphicsRootConstantBufferView(uint32_t RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
+    virtual void    STDCALL SetComputeRootShaderResourceView(uint32_t RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
+    virtual void    STDCALL SetGraphicsRootShaderResourceView(uint32_t RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
+    virtual void    STDCALL SetComputeRootUnorderedAccessView(uint32_t RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
+    virtual void    STDCALL SetGraphicsRootUnorderedAccessView(uint32_t RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) = 0;
+    virtual void    STDCALL IASetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW *pView) = 0;
+    virtual void    STDCALL IASetVertexBuffers(uint32_t StartSlot, uint32_t NumViews, const D3D12_VERTEX_BUFFER_VIEW *pViews) = 0;
+    virtual void    STDCALL SOSetTargets(uint32_t StartSlot, uint32_t NumViews, const D3D12_STREAM_OUTPUT_BUFFER_VIEW *pViews) = 0;
+    virtual void    STDCALL OMSetRenderTargets(uint32_t NumRenderTargetDescriptors, const D3D12_CPU_DESCRIPTOR_HANDLE *pRenderTargetDescriptors,
+                                               BOOL RTsSingleHandleToDescriptorRange,
+                                               const D3D12_CPU_DESCRIPTOR_HANDLE *pDepthStencilDescriptor) = 0;
+    virtual void    STDCALL ClearDepthStencilView(D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView, D3D12_CLEAR_FLAGS ClearFlags, float Depth,
+                                                  uint8_t Stencil, uint32_t NumRects, const D3D12_RECT *pRects) = 0;
+    virtual void    STDCALL ClearRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE RenderTargetView, const float ColorRGBA[4], uint32_t NumRects,
+                                                  const D3D12_RECT *pRects) = 0;
+    virtual void    STDCALL ClearUnorderedAccessViewUint(D3D12_GPU_DESCRIPTOR_HANDLE ViewGPUHandleInCurrentHeap,
+                                                         D3D12_CPU_DESCRIPTOR_HANDLE ViewCPUHandle, ID3D12Resource *pResource,
+                                                         const uint32_t Values[4], uint32_t NumRects, const D3D12_RECT *pRects) = 0;
+    virtual void    STDCALL ClearUnorderedAccessViewFloat(D3D12_GPU_DESCRIPTOR_HANDLE ViewGPUHandleInCurrentHeap,
+                                                          D3D12_CPU_DESCRIPTOR_HANDLE ViewCPUHandle, ID3D12Resource *pResource,
+                                                          const float Values[4], uint32_t NumRects, const D3D12_RECT *pRects) = 0;
+    virtual void    STDCALL DiscardResource(ID3D12Resource *pResource, const D3D12_DISCARD_REGION *pRegion) = 0;
+    virtual void    STDCALL BeginQuery(ID3D12QueryHeap *pQueryHeap, D3D12_QUERY_TYPE Type, uint32_t Index) = 0;
+    virtual void    STDCALL EndQuery(ID3D12QueryHeap *pQueryHeap, D3D12_QUERY_TYPE Type, uint32_t Index) = 0;
+    virtual void    STDCALL ResolveQueryData(ID3D12QueryHeap *pQueryHeap, D3D12_QUERY_TYPE Type, uint32_t StartIndex, uint32_t NumQueries,
+                                             ID3D12Resource *pDestinationBuffer,
+                                             uint64_t AlignedDestinationBufferOffset) = 0;
+    virtual void    STDCALL SetPredication(ID3D12Resource *pBuffer, uint64_t AlignedBufferOffset, D3D12_PREDICATION_OP Operation) = 0;
+    virtual void    STDCALL SetMarker(uint32_t Metadata, const void *pData, uint32_t Size) = 0;
+    virtual void    STDCALL BeginEvent(uint32_t Metadata, const void *pData, uint32_t Size) = 0;
+    virtual void    STDCALL EndEvent() = 0;
+    virtual void    STDCALL ExecuteIndirect(ID3D12CommandSignature *pCommandSignature, uint32_t MaxCommandCount, ID3D12Resource *pArgumentBuffer,
+                                            uint64_t ArgumentBufferOffset, ID3D12Resource *pCountBuffer, uint64_t CountBufferOffset) = 0;
 };
 
 struct ID3D12CommandQueue : public ID3D12Pageable
 {
-    virtual void                     STDCALL UpdateTileMappings(ID3D12Resource *pResource, u32 NumResourceRegions,
+    virtual void                     STDCALL UpdateTileMappings(ID3D12Resource *pResource, uint32_t NumResourceRegions,
                                                                 const D3D12_TILED_RESOURCE_COORDINATE *pResourceRegionStartCoordinates,
                                                                 const D3D12_TILE_REGION_SIZE *pResourceRegionSizes, ID3D12Heap *pHeap,
-                                                                u32 NumRanges, const D3D12_TILE_RANGE_FLAGS *pRangeFlags,
-                                                                const u32 *pHeapRangeStartOffsets, const u32 *pRangeTileCounts,
+                                                                uint32_t NumRanges, const D3D12_TILE_RANGE_FLAGS *pRangeFlags,
+                                                                const uint32_t *pHeapRangeStartOffsets, const uint32_t *pRangeTileCounts,
                                                                 D3D12_TILE_MAPPING_FLAGS Flags) = 0;
     virtual void                     STDCALL CopyTileMappings(ID3D12Resource *pDstResource,
                                                               const D3D12_TILED_RESOURCE_COORDINATE *pDstRegionStartCoordinate,
@@ -2004,41 +2001,41 @@ struct ID3D12CommandQueue : public ID3D12Pageable
                                                               const D3D12_TILED_RESOURCE_COORDINATE *pSrcRegionStartCoordinate,
                                                               const D3D12_TILE_REGION_SIZE *pRegionSize,
                                                               D3D12_TILE_MAPPING_FLAGS Flags) = 0;
-    virtual void                     STDCALL ExecuteCommandLists(u32 NumCommandLists, ID3D12CommandList *const *ppCommandLists) = 0;
-    virtual void                     STDCALL SetMarker(u32 Metadata, const void *pData, u32 Size) = 0;
-    virtual void                     STDCALL BeginEvent(u32 Metadata, const void *pData, u32 Size) = 0;
+    virtual void                     STDCALL ExecuteCommandLists(uint32_t NumCommandLists, ID3D12CommandList *const *ppCommandLists) = 0;
+    virtual void                     STDCALL SetMarker(uint32_t Metadata, const void *pData, uint32_t Size) = 0;
+    virtual void                     STDCALL BeginEvent(uint32_t Metadata, const void *pData, uint32_t Size) = 0;
     virtual void                     STDCALL EndEvent() = 0;
-    virtual i32                      STDCALL Signal(ID3D12Fence *pFence, u64 Value) = 0;
-    virtual i32                      STDCALL Wait(ID3D12Fence *pFence, u64 Value) = 0;
-    virtual i32                      STDCALL GetTimestampFrequency(u64 *pFrequency) = 0;
-    virtual i32                      STDCALL GetClockCalibration(u64 *pGpuTimestamp, u64 *pCpuTimestamp) = 0;
+    virtual int32_t                  STDCALL Signal(ID3D12Fence *pFence, uint64_t Value) = 0;
+    virtual int32_t                  STDCALL Wait(ID3D12Fence *pFence, uint64_t Value) = 0;
+    virtual int32_t                  STDCALL GetTimestampFrequency(uint64_t *pFrequency) = 0;
+    virtual int32_t                  STDCALL GetClockCalibration(uint64_t *pGpuTimestamp, uint64_t *pCpuTimestamp) = 0;
     virtual D3D12_COMMAND_QUEUE_DESC STDCALL GetDesc() = 0;
 };
 
 struct ID3D12Device : public ID3D12Object
 {
-    virtual u32                            STDCALL GetNodeCount() = 0;
-    virtual i32                            STDCALL CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC *pDesc, const GUID &riid,
+    virtual uint32_t                       STDCALL GetNodeCount() = 0;
+    virtual int32_t                        STDCALL CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC *pDesc, const GUID &riid,
                                                                       void **ppCommandQueue) = 0;
-    virtual i32                            STDCALL CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE type, const GUID &riid,
+    virtual int32_t                        STDCALL CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE type, const GUID &riid,
                                                                           void **ppCommandAllocator) = 0;
-    virtual i32                            STDCALL CreateGraphicsPipelineState(const D3D12_GRAPHICS_PIPELINE_STATE_DESC *pDesc,
+    virtual int32_t                        STDCALL CreateGraphicsPipelineState(const D3D12_GRAPHICS_PIPELINE_STATE_DESC *pDesc,
                                                                                const GUID &riid,
                                                                                void **ppPipelineState) = 0;
-    virtual i32                            STDCALL CreateComputePipelineState(const D3D12_COMPUTE_PIPELINE_STATE_DESC *pDesc,
+    virtual int32_t                        STDCALL CreateComputePipelineState(const D3D12_COMPUTE_PIPELINE_STATE_DESC *pDesc,
                                                                               const GUID &riid,
                                                                               void **ppPipelineState) = 0;
-    virtual i32                            STDCALL CreateCommandList(u32 nodeMask, D3D12_COMMAND_LIST_TYPE type,
+    virtual int32_t                        STDCALL CreateCommandList(uint32_t nodeMask, D3D12_COMMAND_LIST_TYPE type,
                                                                      ID3D12CommandAllocator *pCommandAllocator,
                                                                      ID3D12PipelineState *pInitialState, const GUID &riid,
                                                                      void **ppCommandList) = 0;
-    virtual i32                            STDCALL CheckFeatureSupport(D3D12_FEATURE Feature, void *pFeatureSupportData,
-                                                                       u32 FeatureSupportDataSize) = 0;
-    virtual i32                            STDCALL CreateDescriptorHeap(const D3D12_DESCRIPTOR_HEAP_DESC *pDescriptorHeapDesc,
+    virtual int32_t                        STDCALL CheckFeatureSupport(D3D12_FEATURE Feature, void *pFeatureSupportData,
+                                                                       uint32_t FeatureSupportDataSize) = 0;
+    virtual int32_t                        STDCALL CreateDescriptorHeap(const D3D12_DESCRIPTOR_HEAP_DESC *pDescriptorHeapDesc,
                                                                         const GUID &riid, void **ppvHeap) = 0;
-    virtual u32                            STDCALL GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapType) = 0;
-    virtual i32                            STDCALL CreateRootSignature(u32 nodeMask, const void *pBlobWithRootSignature,
-                                                                       u64 blobLengthInBytes, const GUID &riid,
+    virtual uint32_t                       STDCALL GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapType) = 0;
+    virtual int32_t                        STDCALL CreateRootSignature(uint32_t nodeMask, const void *pBlobWithRootSignature,
+                                                                       uint64_t blobLengthInBytes, const GUID &riid,
                                                                        void **ppvRootSignature) = 0;
     virtual void                           STDCALL CreateConstantBufferView(const D3D12_CONSTANT_BUFFER_VIEW_DESC *pDesc,
                                                                             D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor) = 0;
@@ -2056,54 +2053,54 @@ struct ID3D12Device : public ID3D12Object
                                                                           D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor) = 0;
     virtual void                           STDCALL CreateSampler(const D3D12_SAMPLER_DESC *pDesc,
                                                                  D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor) = 0;
-    virtual void                           STDCALL CopyDescriptors(u32 NumDestDescriptorRanges,
+    virtual void                           STDCALL CopyDescriptors(uint32_t NumDestDescriptorRanges,
                                                                    const D3D12_CPU_DESCRIPTOR_HANDLE *pDestDescriptorRangeStarts,
-                                                                   const u32 *pDestDescriptorRangeSizes, u32 NumSrcDescriptorRanges,
+                                                                   const uint32_t *pDestDescriptorRangeSizes, uint32_t NumSrcDescriptorRanges,
                                                                    const D3D12_CPU_DESCRIPTOR_HANDLE *pSrcDescriptorRangeStarts,
-                                                                   const u32 *pSrcDescriptorRangeSizes,
+                                                                   const uint32_t *pSrcDescriptorRangeSizes,
                                                                    D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType) = 0;
-    virtual void                           STDCALL CopyDescriptorsSimple(u32 NumDescriptors,
+    virtual void                           STDCALL CopyDescriptorsSimple(uint32_t NumDescriptors,
                                                                          D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptorRangeStart,
                                                                          D3D12_CPU_DESCRIPTOR_HANDLE SrcDescriptorRangeStart,
                                                                          D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType) = 0;
-    virtual D3D12_RESOURCE_ALLOCATION_INFO STDCALL GetResourceAllocationInfo(u32 visibleMask, u32 numResourceDescs,
+    virtual D3D12_RESOURCE_ALLOCATION_INFO STDCALL GetResourceAllocationInfo(uint32_t visibleMask, uint32_t numResourceDescs,
                                                                              const D3D12_RESOURCE_DESC *pResourceDescs) = 0;
-    virtual D3D12_HEAP_PROPERTIES          STDCALL GetCustomHeapProperties(u32 nodeMask, D3D12_HEAP_TYPE heapType) = 0;
-    virtual i32                            STDCALL CreateCommittedResource(const D3D12_HEAP_PROPERTIES *pHeapProperties,
+    virtual D3D12_HEAP_PROPERTIES          STDCALL GetCustomHeapProperties(uint32_t nodeMask, D3D12_HEAP_TYPE heapType) = 0;
+    virtual int32_t                        STDCALL CreateCommittedResource(const D3D12_HEAP_PROPERTIES *pHeapProperties,
                                                                            D3D12_HEAP_FLAGS HeapFlags, const D3D12_RESOURCE_DESC *pDesc,
                                                                            D3D12_RESOURCE_STATES InitialResourceState,
                                                                            const D3D12_CLEAR_VALUE *pOptimizedClearValue,
                                                                            const GUID &riidResource, void **ppvResource) = 0;
-    virtual i32                            STDCALL CreateHeap(const D3D12_HEAP_DESC *pDesc, const GUID &riid, void **ppvHeap) = 0;
-    virtual i32                            STDCALL CreatePlacedResource(ID3D12Heap *pHeap, u64 HeapOffset, const D3D12_RESOURCE_DESC *pDesc,
+    virtual int32_t                        STDCALL CreateHeap(const D3D12_HEAP_DESC *pDesc, const GUID &riid, void **ppvHeap) = 0;
+    virtual int32_t                        STDCALL CreatePlacedResource(ID3D12Heap *pHeap, uint64_t HeapOffset, const D3D12_RESOURCE_DESC *pDesc,
                                                                         D3D12_RESOURCE_STATES InitialState,
                                                                         const D3D12_CLEAR_VALUE *pOptimizedClearValue,
                                                                         const GUID &riid, void **ppvResource) = 0;
-    virtual i32                            STDCALL CreateReservedResource(const D3D12_RESOURCE_DESC *pDesc,
+    virtual int32_t                        STDCALL CreateReservedResource(const D3D12_RESOURCE_DESC *pDesc,
                                                                           D3D12_RESOURCE_STATES InitialState,
                                                                           const D3D12_CLEAR_VALUE *pOptimizedClearValue,
                                                                           const GUID &riid, void **ppvResource) = 0;
-    virtual i32                            STDCALL CreateSharedHandle(ID3D12DeviceChild *pObject, const SECURITY_ATTRIBUTES *pAttributes,
-                                                                      u32 Access, wchar_t *Name, void **pHandle) = 0;
-    virtual i32                            STDCALL OpenSharedHandle(void *NTHandle, const GUID &riid, void **ppvObj) = 0;
-    virtual i32                            STDCALL OpenSharedHandleByName(wchar_t *Name, u32 Access, void **pNTHandle) = 0;
-    virtual i32                            STDCALL MakeResident(u32 NumObjects, ID3D12Pageable *const *ppObjects) = 0;
-    virtual i32                            STDCALL Evict(u32 NumObjects, ID3D12Pageable *const *ppObjects) = 0;
-    virtual i32                            STDCALL CreateFence(u64 InitialValue, D3D12_FENCE_FLAGS Flags, const GUID &riid,
+    virtual int32_t                        STDCALL CreateSharedHandle(ID3D12DeviceChild *pObject, const SECURITY_ATTRIBUTES *pAttributes,
+                                                                      uint32_t Access, wchar_t *Name, void **pHandle) = 0;
+    virtual int32_t                        STDCALL OpenSharedHandle(void *NTHandle, const GUID &riid, void **ppvObj) = 0;
+    virtual int32_t                        STDCALL OpenSharedHandleByName(wchar_t *Name, uint32_t Access, void **pNTHandle) = 0;
+    virtual int32_t                        STDCALL MakeResident(uint32_t NumObjects, ID3D12Pageable *const *ppObjects) = 0;
+    virtual int32_t                        STDCALL Evict(uint32_t NumObjects, ID3D12Pageable *const *ppObjects) = 0;
+    virtual int32_t                        STDCALL CreateFence(uint64_t InitialValue, D3D12_FENCE_FLAGS Flags, const GUID &riid,
                                                                void **ppFence) = 0;
-    virtual i32                            STDCALL GetDeviceRemovedReason() = 0;
-    virtual void                           STDCALL GetCopyableFootprints(const D3D12_RESOURCE_DESC *pResourceDesc, u32 FirstSubresource,
-                                                                         u32 NumSubresources, u64 BaseOffset,
-                                                                         D3D12_PLACED_SUBRESOURCE_FOOTPRINT *pLayouts, u32 *pNumRows,
-                                                                         u64 *pRowSizeInBytes, u64 *pTotalBytes) = 0;
-    virtual i32                            STDCALL CreateQueryHeap(const D3D12_QUERY_HEAP_DESC *pDesc, const GUID &riid, void **ppvHeap) = 0;
-    virtual i32                            STDCALL SetStablePowerState(b32 Enable) = 0;
-    virtual i32                            STDCALL CreateCommandSignature(const D3D12_COMMAND_SIGNATURE_DESC *pDesc, ID3D12RootSignature *pRootSignature,
+    virtual int32_t                        STDCALL GetDeviceRemovedReason() = 0;
+    virtual void                           STDCALL GetCopyableFootprints(const D3D12_RESOURCE_DESC *pResourceDesc, uint32_t FirstSubresource,
+                                                                         uint32_t NumSubresources, uint64_t BaseOffset,
+                                                                         D3D12_PLACED_SUBRESOURCE_FOOTPRINT *pLayouts, uint32_t *pNumRows,
+                                                                         uint64_t *pRowSizeInBytes, uint64_t *pTotalBytes) = 0;
+    virtual int32_t                        STDCALL CreateQueryHeap(const D3D12_QUERY_HEAP_DESC *pDesc, const GUID &riid, void **ppvHeap) = 0;
+    virtual int32_t                        STDCALL SetStablePowerState(BOOL Enable) = 0;
+    virtual int32_t                        STDCALL CreateCommandSignature(const D3D12_COMMAND_SIGNATURE_DESC *pDesc, ID3D12RootSignature *pRootSignature,
                                                                           const GUID &riid, void **ppvCommandSignature) = 0;
-    virtual void                           STDCALL GetResourceTiling(ID3D12Resource *pTiledResource, u32 *pNumTilesForEntireResource,
+    virtual void                           STDCALL GetResourceTiling(ID3D12Resource *pTiledResource, uint32_t *pNumTilesForEntireResource,
                                                                      D3D12_PACKED_MIP_INFO *pPackedMipDesc,
                                                                      D3D12_TILE_SHAPE *pStandardTileShapeForNonPackedMips,
-                                                                     u32 *pNumSubresourceTilings, u32 FirstSubresourceTilingToGet,
+                                                                     uint32_t *pNumSubresourceTilings, uint32_t FirstSubresourceTilingToGet,
                                                                      D3D12_SUBRESOURCE_TILING *pSubresourceTilingsForNonPackedMips) = 0;
     virtual LUID                           STDCALL GetAdapterLuid() = 0;
 };
@@ -2117,17 +2114,17 @@ struct ID3D12Debug : public IUnknown
 
 struct DXGI_RGB
 {
-    f32 Red;
-    f32 Green;
-    f32 Blue;
+    float Red;
+    float Green;
+    float Blue;
 };
 
 struct DXGI_RGBA
 {
-    f32 Red;
-    f32 Green;
-    f32 Blue;
-    f32 Alpha;
+    float Red;
+    float Green;
+    float Blue;
+    float Alpha;
 };
 
 struct DXGI_GAMMA_CONTROL
@@ -2139,17 +2136,17 @@ struct DXGI_GAMMA_CONTROL
 
 struct DXGI_GAMMA_CONTROL_CAPABILITIES
 {
-    b32 ScaleAndOffsetSupported;
-    f32 MaxConvertedValue;
-    f32 MinConvertedValue;
-    u32 NumGammaControlPoints;
-    f32 ControlPointPositions[1025];
+    BOOL ScaleAndOffsetSupported;
+    float MaxConvertedValue;
+    float MinConvertedValue;
+    uint32_t NumGammaControlPoints;
+    float ControlPointPositions[1025];
 };
 
 struct DXGI_RATIONAL
 {
-    u32 Numerator;
-    u32 Denominator;
+    uint32_t Numerator;
+    uint32_t Denominator;
 };
 
 enum DXGI_MODE_SCANLINE_ORDER
@@ -2178,8 +2175,8 @@ enum DXGI_MODE_ROTATION
 
 struct DXGI_MODE_DESC
 {
-    u32                      Width;
-    u32                      Height;
+    uint32_t                      Width;
+    uint32_t                      Height;
     DXGI_RATIONAL            RefreshRate;
     DXGI_FORMAT              Format;
     DXGI_MODE_SCANLINE_ORDER ScanlineOrdering;
@@ -2190,59 +2187,59 @@ struct DXGI_OUTPUT_DESC
 {
     wchar_t            DeviceName[32];
     RECT               DesktopCoordinates;
-    b32                AttachedToDesktop;
+    BOOL                AttachedToDesktop;
     DXGI_MODE_ROTATION Rotation;
     void               *Monitor;
 };
 
 struct DXGI_SURFACE_DESC
 {
-    u32              Width;
-    u32              Height;
+    uint32_t              Width;
+    uint32_t              Height;
     DXGI_FORMAT      Format;
     DXGI_SAMPLE_DESC SampleDesc;
 };
 
 struct DXGI_MAPPED_RECT
 {
-    i32 Pitch;
-    u8  *pBits;
+    int32_t Pitch;
+    uint8_t  *pBits;
 };
 
 struct DXGI_FRAME_STATISTICS
 {
-    u32 PresentCount;
-    u32 PresentRefreshCount;
-    u32 SyncRefreshCount;
-    i64 SyncQPCTime;
-    i64 SyncGPUTime;
+    uint32_t PresentCount;
+    uint32_t PresentRefreshCount;
+    uint32_t SyncRefreshCount;
+    int64_t SyncQPCTime;
+    int64_t SyncGPUTime;
 };
 
 struct DXGI_ADAPTER_DESC
 {
-    wchar_t Description[128];
-    u32     VendorId;
-    u32     DeviceId;
-    u32     SubSysId;
-    u32     Revision;
-    u64     DedicatedVideoMemory;
-    u64     DedicatedSystemMemory;
-    u64     SharedSystemMemory;
-    LUID    AdapterLuid;
+    wchar_t  Description[128];
+    uint32_t VendorId;
+    uint32_t DeviceId;
+    uint32_t SubSysId;
+    uint32_t Revision;
+    uint64_t DedicatedVideoMemory;
+    uint64_t DedicatedSystemMemory;
+    uint64_t SharedSystemMemory;
+    LUID     AdapterLuid;
 };
 
 struct DXGI_ADAPTER_DESC1
 {
-    wchar_t Description[128];
-    u32     VendorId;
-    u32     DeviceId;
-    u32     SubSysId;
-    u32     Revision;
-    u64     DedicatedVideoMemory;
-    u64     DedicatedSystemMemory;
-    u64     SharedSystemMemory;
-    LUID    AdapterLuid;
-    u32     Flags;
+    wchar_t  Description[128];
+    uint32_t VendorId;
+    uint32_t DeviceId;
+    uint32_t SubSysId;
+    uint32_t Revision;
+    uint64_t DedicatedVideoMemory;
+    uint64_t DedicatedSystemMemory;
+    uint64_t SharedSystemMemory;
+    LUID     AdapterLuid;
+    uint32_t Flags;
 };
 
 #define DXGI_USAGE_SHADER_INPUT         0x00000010UL
@@ -2252,7 +2249,7 @@ struct DXGI_ADAPTER_DESC1
 #define DXGI_USAGE_READ_ONLY            0x00000100UL
 #define DXGI_USAGE_DISCARD_ON_PRESENT   0x00000200UL
 #define DXGI_USAGE_UNORDERED_ACCESS     0x00000400UL
-typedef u32 DXGI_USAGE;
+typedef uint32_t DXGI_USAGE;
 
 enum DXGI_SWAP_EFFECT
 {
@@ -2267,11 +2264,11 @@ struct DXGI_SWAP_CHAIN_DESC
     DXGI_MODE_DESC   BufferDesc;
     DXGI_SAMPLE_DESC SampleDesc;
     DXGI_USAGE       BufferUsage;
-    u32              BufferCount;
+    uint32_t         BufferCount;
     void             *OutputWindow;
-    b32              Windowed;
+    BOOL             Windowed;
     DXGI_SWAP_EFFECT SwapEffect;
-    u32              Flags;
+    uint32_t         Flags;
 };
 
 enum DXGI_SCALING
@@ -2292,17 +2289,17 @@ enum DXGI_ALPHA_MODE
 
 struct DXGI_SWAP_CHAIN_DESC1
 {
-    u32              Width;
-    u32              Height;
+    uint32_t         Width;
+    uint32_t         Height;
     DXGI_FORMAT      Format;
-    b32              Stereo;
+    BOOL             Stereo;
     DXGI_SAMPLE_DESC SampleDesc;
     DXGI_USAGE       BufferUsage;
-    u32              BufferCount;
+    uint32_t         BufferCount;
     DXGI_SCALING     Scaling;
     DXGI_SWAP_EFFECT SwapEffect;
     DXGI_ALPHA_MODE  AlphaMode;
-    u32              Flags;
+    uint32_t         Flags;
 };
 
 struct DXGI_SWAP_CHAIN_FULLSCREEN_DESC
@@ -2310,25 +2307,25 @@ struct DXGI_SWAP_CHAIN_FULLSCREEN_DESC
     DXGI_RATIONAL            RefreshRate;
     DXGI_MODE_SCANLINE_ORDER ScanlineOrdering;
     DXGI_MODE_SCALING        Scaling;
-    b32                      Windowed;
+    BOOL                     Windowed;
 };
 
 struct DXGI_PRESENT_PARAMETERS
 {
-    u32   DirtyRectsCount;
-    RECT  *pDirtyRects;
-    RECT  *pScrollRect;
-    POINT *pScrollOffset;
+    uint32_t DirtyRectsCount;
+    RECT     *pDirtyRects;
+    RECT     *pScrollRect;
+    POINT    *pScrollOffset;
 };
 
 struct DXGI_MATRIX_3X2_F
 {
-    f32 _11;
-    f32 _12;
-    f32 _21;
-    f32 _22;
-    f32 _31;
-    f32 _32;
+    float _11;
+    float _12;
+    float _21;
+    float _22;
+    float _31;
+    float _32;
 };
 
 enum DXGI_COLOR_SPACE_TYPE
@@ -2356,152 +2353,152 @@ enum DXGI_COLOR_SPACE_TYPE
 
 struct IDXGIObject : public IUnknown
 {
-    virtual i32 STDCALL SetPrivateData(const GUID &Name, u32 DataSize, const void *pData) = 0;
-    virtual i32 STDCALL SetPrivateDataInterface(const GUID &Name, const IUnknown *pUnknown) = 0;
-    virtual i32 STDCALL GetPrivateData(const GUID &Name, u32 *pDataSize, void *pData) = 0;
-    virtual i32 STDCALL GetParent(const GUID &riid, void **ppParent) = 0;
+    virtual int32_t STDCALL SetPrivateData(const GUID &Name, uint32_t DataSize, const void *pData) = 0;
+    virtual int32_t STDCALL SetPrivateDataInterface(const GUID &Name, const IUnknown *pUnknown) = 0;
+    virtual int32_t STDCALL GetPrivateData(const GUID &Name, uint32_t *pDataSize, void *pData) = 0;
+    virtual int32_t STDCALL GetParent(const GUID &riid, void **ppParent) = 0;
 };
 
 struct IDXGIDeviceSubObject : public IDXGIObject
 {
-    virtual i32 STDCALL GetDevice(const GUID &riid, void **ppDevice) = 0;
+    virtual int32_t STDCALL GetDevice(const GUID &riid, void **ppDevice) = 0;
 };
 
 struct IDXGISurface : public IDXGIDeviceSubObject
 {
-    virtual i32 STDCALL GetDesc(DXGI_SURFACE_DESC *pDesc) = 0;
-    virtual i32 STDCALL Map(DXGI_MAPPED_RECT *pLockedRect, u32 MapFlags) = 0;
-    virtual i32 STDCALL Unmap() = 0;
+    virtual int32_t STDCALL GetDesc(DXGI_SURFACE_DESC *pDesc) = 0;
+    virtual int32_t STDCALL Map(DXGI_MAPPED_RECT *pLockedRect, uint32_t MapFlags) = 0;
+    virtual int32_t STDCALL Unmap() = 0;
 };
 
 struct IDXGIOutput : public IDXGIObject
 {
-    virtual i32  STDCALL GetDesc(DXGI_OUTPUT_DESC *pDesc) = 0;
-    virtual i32  STDCALL GetDisplayModeList(DXGI_FORMAT EnumFormat, u32 Flags,
-                                            u32 *pNumModes,
-                                            DXGI_MODE_DESC *pDesc) = 0;
-    virtual i32  STDCALL FindClosestMatchingMode(const DXGI_MODE_DESC *pModeToMatch,
-                                                 DXGI_MODE_DESC *pClosestMatch,
-                                                 IUnknown *pConcernedDevice) = 0;
-    virtual  i32 STDCALL WaitForVBlank() = 0;
-    virtual  i32 STDCALL TakeOwnership(IUnknown *pDevice, b32 Exclusive) = 0;
-    virtual void STDCALL ReleaseOwnership() = 0;
-    virtual  i32 STDCALL GetGammaControlCapabilities(DXGI_GAMMA_CONTROL_CAPABILITIES *pGammaCaps) = 0;
-    virtual  i32 STDCALL SetGammaControl(const DXGI_GAMMA_CONTROL *pArray) = 0;
-    virtual  i32 STDCALL GetGammaControl(DXGI_GAMMA_CONTROL *pArray) = 0;
-    virtual  i32 STDCALL SetDisplaySurface(IDXGISurface *pScanoutSurface) = 0;
-    virtual  i32 STDCALL GetDisplaySurfaceData(IDXGISurface *pDestination) = 0;
-    virtual  i32 STDCALL GetFrameStatistics(DXGI_FRAME_STATISTICS *pStats) = 0;
+    virtual int32_t STDCALL GetDesc(DXGI_OUTPUT_DESC *pDesc) = 0;
+    virtual int32_t STDCALL GetDisplayModeList(DXGI_FORMAT EnumFormat, uint32_t Flags,
+                                               uint32_t *pNumModes,
+                                               DXGI_MODE_DESC *pDesc) = 0;
+    virtual int32_t  STDCALL FindClosestMatchingMode(const DXGI_MODE_DESC *pModeToMatch,
+                                                     DXGI_MODE_DESC *pClosestMatch,
+                                                     IUnknown *pConcernedDevice) = 0;
+    virtual  int32_t STDCALL WaitForVBlank() = 0;
+    virtual  int32_t STDCALL TakeOwnership(IUnknown *pDevice, BOOL Exclusive) = 0;
+    virtual  void    STDCALL ReleaseOwnership() = 0;
+    virtual  int32_t STDCALL GetGammaControlCapabilities(DXGI_GAMMA_CONTROL_CAPABILITIES *pGammaCaps) = 0;
+    virtual  int32_t STDCALL SetGammaControl(const DXGI_GAMMA_CONTROL *pArray) = 0;
+    virtual  int32_t STDCALL GetGammaControl(DXGI_GAMMA_CONTROL *pArray) = 0;
+    virtual  int32_t STDCALL SetDisplaySurface(IDXGISurface *pScanoutSurface) = 0;
+    virtual  int32_t STDCALL GetDisplaySurfaceData(IDXGISurface *pDestination) = 0;
+    virtual  int32_t STDCALL GetFrameStatistics(DXGI_FRAME_STATISTICS *pStats) = 0;
 };
 
 struct IDXGIAdapter : public IDXGIObject
 {
-    virtual i32 STDCALL EnumOutputs(u32 Output, IDXGIOutput **ppOutput) = 0;
-    virtual i32 STDCALL GetDesc(DXGI_ADAPTER_DESC *pDesc) = 0;
-    virtual i32 STDCALL CheckInterfaceSupport(const GUID &InterfaceName, i64 *pUMDVersion) = 0;
+    virtual int32_t STDCALL EnumOutputs(uint32_t Output, IDXGIOutput **ppOutput) = 0;
+    virtual int32_t STDCALL GetDesc(DXGI_ADAPTER_DESC *pDesc) = 0;
+    virtual int32_t STDCALL CheckInterfaceSupport(const GUID &InterfaceName, int64_t *pUMDVersion) = 0;
 };
 
 struct IDXGIAdapter1 : public IDXGIAdapter
 {
-    virtual i32 STDCALL GetDesc1(DXGI_ADAPTER_DESC1 *pDesc) = 0;
+    virtual int32_t STDCALL GetDesc1(DXGI_ADAPTER_DESC1 *pDesc) = 0;
 };
 
 struct IDXGISwapChain : public IDXGIDeviceSubObject
 {
-    virtual i32 STDCALL Present(u32 SyncInterval, u32 Flags) = 0;
-    virtual i32 STDCALL GetBuffer(u32 Buffer, const GUID &riid, void **ppSurface) = 0;
-    virtual i32 STDCALL SetFullscreenState(b32 Fullscreen, IDXGIOutput *pTarget) = 0;
-    virtual i32 STDCALL GetFullscreenState(b32 *pFullscreen, IDXGIOutput **ppTarget) = 0;
-    virtual i32 STDCALL GetDesc(DXGI_SWAP_CHAIN_DESC *pDesc) = 0; 
-    virtual i32 STDCALL ResizeBuffers(u32 BufferCount, u32 Width, u32 Height, DXGI_FORMAT NewFormat,
-                                      u32 SwapChainFlags) = 0;
-    virtual i32 STDCALL ResizeTarget(const DXGI_MODE_DESC *pNewTargetParameters) = 0;
-    virtual i32 STDCALL GetContainingOutput(IDXGIOutput **ppOutput) = 0;
-    virtual i32 STDCALL GetFrameStatistics(DXGI_FRAME_STATISTICS *pStats) = 0;
-    virtual i32 STDCALL GetLastPresentCount(u32 *pLastPresentCount) = 0;
+    virtual int32_t STDCALL Present(uint32_t SyncInterval, uint32_t Flags) = 0;
+    virtual int32_t STDCALL GetBuffer(uint32_t Buffer, const GUID &riid, void **ppSurface) = 0;
+    virtual int32_t STDCALL SetFullscreenState(BOOL Fullscreen, IDXGIOutput *pTarget) = 0;
+    virtual int32_t STDCALL GetFullscreenState(BOOL *pFullscreen, IDXGIOutput **ppTarget) = 0;
+    virtual int32_t STDCALL GetDesc(DXGI_SWAP_CHAIN_DESC *pDesc) = 0; 
+    virtual int32_t STDCALL ResizeBuffers(uint32_t BufferCount, uint32_t Width, uint32_t Height, DXGI_FORMAT NewFormat,
+                                          uint32_t SwapChainFlags) = 0;
+    virtual int32_t STDCALL ResizeTarget(const DXGI_MODE_DESC *pNewTargetParameters) = 0;
+    virtual int32_t STDCALL GetContainingOutput(IDXGIOutput **ppOutput) = 0;
+    virtual int32_t STDCALL GetFrameStatistics(DXGI_FRAME_STATISTICS *pStats) = 0;
+    virtual int32_t STDCALL GetLastPresentCount(uint32_t *pLastPresentCount) = 0;
 };
 
 struct IDXGISwapChain1 : public IDXGISwapChain
 {
-    virtual i32 STDCALL GetDesc1(DXGI_SWAP_CHAIN_DESC1 *pDesc) = 0;
-    virtual i32 STDCALL GetFullscreenDesc(DXGI_SWAP_CHAIN_FULLSCREEN_DESC *pDesc) = 0;
-    virtual i32 STDCALL GetHwnd(void **pHwnd) = 0;
-    virtual i32 STDCALL GetCoreWindow(const GUID &refiid, void **ppUnk) = 0;
-    virtual i32 STDCALL Present1(u32 SyncInterval, u32 PresentFlags,
-                                 const DXGI_PRESENT_PARAMETERS *pPresentParameters) = 0;
-    virtual b32 STDCALL IsTemporaryMonoSupported() = 0;
-    virtual i32 STDCALL GetRestrictToOutput(IDXGIOutput **ppRestrictToOutput) = 0;
-    virtual i32 STDCALL SetBackgroundColor(const DXGI_RGBA *pColor) = 0;
-    virtual i32 STDCALL GetBackgroundColor(DXGI_RGBA *pColor) = 0;
-    virtual i32 STDCALL SetRotation(DXGI_MODE_ROTATION Rotation) = 0;
-    virtual i32 STDCALL GetRotation(DXGI_MODE_ROTATION *pRotation) = 0;
+    virtual int32_t STDCALL GetDesc1(DXGI_SWAP_CHAIN_DESC1 *pDesc) = 0;
+    virtual int32_t STDCALL GetFullscreenDesc(DXGI_SWAP_CHAIN_FULLSCREEN_DESC *pDesc) = 0;
+    virtual int32_t STDCALL GetHwnd(void **pHwnd) = 0;
+    virtual int32_t STDCALL GetCoreWindow(const GUID &refiid, void **ppUnk) = 0;
+    virtual int32_t STDCALL Present1(uint32_t SyncInterval, uint32_t PresentFlags,
+                                     const DXGI_PRESENT_PARAMETERS *pPresentParameters) = 0;
+    virtual BOOL    STDCALL IsTemporaryMonoSupported() = 0;
+    virtual int32_t STDCALL GetRestrictToOutput(IDXGIOutput **ppRestrictToOutput) = 0;
+    virtual int32_t STDCALL SetBackgroundColor(const DXGI_RGBA *pColor) = 0;
+    virtual int32_t STDCALL GetBackgroundColor(DXGI_RGBA *pColor) = 0;
+    virtual int32_t STDCALL SetRotation(DXGI_MODE_ROTATION Rotation) = 0;
+    virtual int32_t STDCALL GetRotation(DXGI_MODE_ROTATION *pRotation) = 0;
 };
 
 struct IDXGISwapChain2 : public IDXGISwapChain1
 {
-    virtual i32    STDCALL SetSourceSize(u32 Width, u32 Height) = 0;
-    virtual i32    STDCALL GetSourceSize(u32 *pWidth, u32 *pHeight) = 0;
-    virtual i32    STDCALL SetMaximumFrameLatency(u32 MaxLatency) = 0;
-    virtual i32    STDCALL GetMaximumFrameLatency(u32 *pMaxLatency) = 0;
-    virtual void * STDCALL GetFrameLatencyWaitableObject() = 0;
-    virtual i32    STDCALL SetMatrixTransform(const DXGI_MATRIX_3X2_F *pMatrix) = 0;
-    virtual i32    STDCALL GetMatrixTransform(DXGI_MATRIX_3X2_F *pMatrix) = 0;
+    virtual int32_t STDCALL SetSourceSize(uint32_t Width, uint32_t Height) = 0;
+    virtual int32_t STDCALL GetSourceSize(uint32_t *pWidth, uint32_t *pHeight) = 0;
+    virtual int32_t STDCALL SetMaximumFrameLatency(uint32_t MaxLatency) = 0;
+    virtual int32_t STDCALL GetMaximumFrameLatency(uint32_t *pMaxLatency) = 0;
+    virtual void *  STDCALL GetFrameLatencyWaitableObject() = 0;
+    virtual int32_t STDCALL SetMatrixTransform(const DXGI_MATRIX_3X2_F *pMatrix) = 0;
+    virtual int32_t STDCALL GetMatrixTransform(DXGI_MATRIX_3X2_F *pMatrix) = 0;
 };
 
 struct IDXGISwapChain3 : public IDXGISwapChain2
 {
-    virtual u32 STDCALL GetCurrentBackBufferIndex() = 0;
-    virtual i32 STDCALL CheckColorSpaceSupport(DXGI_COLOR_SPACE_TYPE ColorSpace, u32 *pColorSpaceSupport) = 0;
-    virtual i32 STDCALL SetColorSpace1(DXGI_COLOR_SPACE_TYPE ColorSpace) = 0;
-    virtual i32 STDCALL ResizeBuffers1(u32 BufferCount, u32 Width, u32 Height, DXGI_FORMAT Format, u32 SwapChainFlags,
-                                       const u32 *pCreationNodeMask, IUnknown *const *ppPresentQueue) = 0;
+    virtual uint32_t STDCALL GetCurrentBackBufferIndex() = 0;
+    virtual int32_t  STDCALL CheckColorSpaceSupport(DXGI_COLOR_SPACE_TYPE ColorSpace, uint32_t *pColorSpaceSupport) = 0;
+    virtual int32_t  STDCALL SetColorSpace1(DXGI_COLOR_SPACE_TYPE ColorSpace) = 0;
+    virtual int32_t  STDCALL ResizeBuffers1(uint32_t BufferCount, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, uint32_t SwapChainFlags,
+                                            const uint32_t *pCreationNodeMask, IUnknown *const *ppPresentQueue) = 0;
 };
 
 struct IDXGIFactory : public IDXGIObject
 {
-    virtual i32 STDCALL EnumAdapters(u32 Adapter, IDXGIAdapter **ppAdapter) = 0;
-    virtual i32 STDCALL MakeWindowAssociation(void *WindowHandle, u32 Flags) = 0;
-    virtual i32 STDCALL GetWindowAssociation(void **pWindowHandle) = 0;
-    virtual i32 STDCALL CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) = 0;
-    virtual i32 STDCALL CreateSoftwareAdapter(void *Module, IDXGIAdapter **ppAdapter) = 0;
+    virtual int32_t STDCALL EnumAdapters(uint32_t Adapter, IDXGIAdapter **ppAdapter) = 0;
+    virtual int32_t STDCALL MakeWindowAssociation(void *WindowHandle, uint32_t Flags) = 0;
+    virtual int32_t STDCALL GetWindowAssociation(void **pWindowHandle) = 0;
+    virtual int32_t STDCALL CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) = 0;
+    virtual int32_t STDCALL CreateSoftwareAdapter(void *Module, IDXGIAdapter **ppAdapter) = 0;
 };
 
 struct IDXGIFactory1 : public IDXGIFactory
 {
-    virtual i32 STDCALL EnumAdapters1(u32 Adapter, IDXGIAdapter1 **ppAdapter) = 0;
-    virtual b32 STDCALL IsCurrent() = 0;
+    virtual int32_t STDCALL EnumAdapters1(uint32_t Adapter, IDXGIAdapter1 **ppAdapter) = 0;
+    virtual BOOL    STDCALL IsCurrent() = 0;
 };
 
 struct IDXGIFactory2 : public IDXGIFactory1
 {
-    virtual b32  STDCALL IsWindowedStereoEnabled() = 0;
-    virtual i32  STDCALL CreateSwapChainForHwnd(IUnknown *pDevice, void *hWnd, const DXGI_SWAP_CHAIN_DESC1 *pDesc,
-                                                const DXGI_SWAP_CHAIN_FULLSCREEN_DESC *pFullscreenDesc,
-                                                IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain) = 0;
-    virtual i32  STDCALL CreateSwapChainForCoreWindow(IUnknown *pDevice, IUnknown *pWindow,
-                                                      const DXGI_SWAP_CHAIN_DESC1 *pDesc,
-                                                      IDXGIOutput *pRestrictToOutput,
-                                                      IDXGISwapChain1 **ppSwapChain) = 0;
-    virtual i32  STDCALL GetSharedResourceAdapterLuid(void *hResource, LUID *pLuid) = 0;
-    virtual i32  STDCALL RegisterStereoStatusWindow(void *WindowHandle, u32 wMsg, u32 *pdwCookie) = 0;
-    virtual i32  STDCALL RegisterStereoStatusEvent(void *hEvent, u32 *pdwCookie) = 0;
-    virtual void STDCALL UnregisterStereoStatus(u32 dwCookie) = 0;
-    virtual i32  STDCALL RegisterOcclusionStatusWindow(void *WindowHandle, u32 wMsg, u32 *pdwCookie) = 0;
-    virtual i32  STDCALL RegisterOcclusionStatusEvent(void *hEvent, u32 *pdwCookie) = 0;
-    virtual void STDCALL UnregisterOcclusionStatus(u32 dwCookie) = 0;
-    virtual i32  STDCALL CreateSwapChainForComposition(IUnknown *pDevice, const DXGI_SWAP_CHAIN_DESC1 *pDesc,
+    virtual BOOL    STDCALL IsWindowedStereoEnabled() = 0;
+    virtual int32_t STDCALL CreateSwapChainForHwnd(IUnknown *pDevice, void *hWnd, const DXGI_SWAP_CHAIN_DESC1 *pDesc,
+                                                   const DXGI_SWAP_CHAIN_FULLSCREEN_DESC *pFullscreenDesc,
+                                                   IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain) = 0;
+    virtual int32_t STDCALL CreateSwapChainForCoreWindow(IUnknown *pDevice, IUnknown *pWindow,
+                                                         const DXGI_SWAP_CHAIN_DESC1 *pDesc,
+                                                         IDXGIOutput *pRestrictToOutput,
+                                                         IDXGISwapChain1 **ppSwapChain) = 0;
+    virtual int32_t  STDCALL GetSharedResourceAdapterLuid(void *hResource, LUID *pLuid) = 0;
+    virtual int32_t  STDCALL RegisterStereoStatusWindow(void *WindowHandle, uint32_t wMsg, uint32_t *pdwCookie) = 0;
+    virtual int32_t  STDCALL RegisterStereoStatusEvent(void *hEvent, uint32_t *pdwCookie) = 0;
+    virtual void     STDCALL UnregisterStereoStatus(uint32_t dwCookie) = 0;
+    virtual int32_t  STDCALL RegisterOcclusionStatusWindow(void *WindowHandle, uint32_t wMsg, uint32_t *pdwCookie) = 0;
+    virtual int32_t  STDCALL RegisterOcclusionStatusEvent(void *hEvent, uint32_t *pdwCookie) = 0;
+    virtual void     STDCALL UnregisterOcclusionStatus(uint32_t dwCookie) = 0;
+    virtual int32_t  STDCALL CreateSwapChainForComposition(IUnknown *pDevice, const DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                                        IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain) = 0;
 };
 
 struct IDXGIFactory3 : public IDXGIFactory2
 {
-    virtual u32 STDCALL GetCreationFlags() = 0;
+    virtual uint32_t STDCALL GetCreationFlags() = 0;
 };
 
 struct IDXGIFactory4 : public IDXGIFactory3
 {
-    virtual i32 STDCALL EnumAdapterByLuid(LUID AdapterLuid, const GUID &riid, void **ppvAdapter) = 0;
-    virtual i32 STDCALL EnumWarpAdapter(const GUID &riid, void **ppvAdapter) = 0;
+    virtual int32_t STDCALL EnumAdapterByLuid(LUID AdapterLuid, const GUID &riid, void **ppvAdapter) = 0;
+    virtual int32_t STDCALL EnumWarpAdapter(const GUID &riid, void **ppvAdapter) = 0;
 };
 
 
@@ -2520,35 +2517,35 @@ const GUID IID_ID3D12Fence = { 0x0a753dcf,0xc4d8,0x4b91,0xad,0xf6,0xbe,0x5a,0x60
 const GUID IID_ID3D12PipelineState = { 0x765a30f3,0xf624,0x4c6f,0xa8,0x28,0xac,0xe9,0x48,0x62,0x24,0x45 };
 
 
-extern "C" void * STDCALL LoadLibraryA(const char *filename);
-extern "C" void * STDCALL GetProcAddress(void *module, const char *procname);
+extern "C" void*  STDCALL LoadLibraryA(const char* filename);
+extern "C" void*  STDCALL GetProcAddress(void* module, const char* procname);
 
-typedef void  (STDCALL *OutputDebugString_fn)(const char *string);
-typedef void  (STDCALL *ExitProcess_fn)(u32 exit_code);
-typedef void *(STDCALL *GetModuleHandle_fn)(const char *module_name);
-typedef void  (STDCALL *Sleep_fn)(u32 milisec);
-typedef void *(STDCALL *CreateEventEx_fn)(SECURITY_ATTRIBUTES *lpEventAttributes, const char *lpName, u32 dwFlags, u32 dwDesiredAccess);
-typedef u32   (STDCALL *WaitForSingleObject_fn)(void *hHandle, u32 dwMilliseconds);
-typedef b32   (STDCALL *QueryPerformanceCounter_fn)(i64 *lpPerformanceCount);
-typedef b32   (STDCALL *QueryPerformanceFrequency_fn)(i64 *lpFrequency);
+typedef void     (STDCALL *OutputDebugString_fn)(const char *string);
+typedef void     (STDCALL *ExitProcess_fn)(uint32_t exit_code);
+typedef void*    (STDCALL *GetModuleHandle_fn)(const char *module_name);
+typedef void     (STDCALL *Sleep_fn)(uint32_t milisec);
+typedef void*    (STDCALL *CreateEventEx_fn)(SECURITY_ATTRIBUTES *lpEventAttributes, const char *lpName, uint32_t dwFlags, uint32_t dwDesiredAccess);
+typedef uint32_t (STDCALL *WaitForSingleObject_fn)(void *hHandle, uint32_t dwMilliseconds);
+typedef BOOL     (STDCALL *QueryPerformanceCounter_fn)(int64_t *lpPerformanceCount);
+typedef BOOL     (STDCALL *QueryPerformanceFrequency_fn)(int64_t *lpFrequency);
 
-typedef b32   (STDCALL *PeekMessage_fn)(MSG *msg, void *hwnd, u32 filter_min, u32 filter_max, u32 remove_msg);
-typedef i64   (STDCALL *DispatchMessage_fn)(const MSG *msg);
-typedef void  (STDCALL *PostQuitMessage_fn)(i32 exit_code);
-typedef i64   (STDCALL *DefWindowProc_fn)(void *hwnd, u32 msg, u64 wparam, i64 lparam);
-typedef void *(STDCALL *LoadCursor_fn)(void *hinstance, const char *cursor_name);
-typedef i16   (STDCALL *RegisterClass_fn)(const WNDCLASS *wndclass);
-typedef void *(STDCALL *CreateWindowEx_fn)(u32 ex_style, const char *class_name, const char *window_name,
-                                           u32 style, i32 x, i32 y, i32 width, i32 height,
+typedef BOOL     (STDCALL *PeekMessage_fn)(MSG *msg, void *hwnd, uint32_t filter_min, uint32_t filter_max, uint32_t remove_msg);
+typedef int64_t  (STDCALL *DispatchMessage_fn)(const MSG *msg);
+typedef void     (STDCALL *PostQuitMessage_fn)(int32_t exit_code);
+typedef int64_t  (STDCALL *DefWindowProc_fn)(void *hwnd, uint32_t msg, uint64_t wparam, int64_t lparam);
+typedef void*    (STDCALL *LoadCursor_fn)(void *hinstance, const char *cursor_name);
+typedef int16_t  (STDCALL *RegisterClass_fn)(const WNDCLASS *wndclass);
+typedef void*    (STDCALL *CreateWindowEx_fn)(uint32_t ex_style, const char *class_name, const char *window_name,
+                                           uint32_t style, int32_t x, int32_t y, int32_t width, int32_t height,
                                            void *hwnd_parent, void *hmenu, void *hinstance, void *param);
-typedef b32   (STDCALL *AdjustWindowRect_fn)(RECT *lpRect, u32 dwStyle, b32 bMenu);
-typedef i32   (__cdecl *wsprintf_fn)(char *str, const char *format, ...);
-typedef b32   (STDCALL *SetWindowText_fn)(void *hWnd, const char *lpString);
+typedef BOOL     (STDCALL *AdjustWindowRect_fn)(RECT *lpRect, uint32_t dwStyle, BOOL bMenu);
+typedef int32_t  (__cdecl *wsprintf_fn)(char *str, const char *format, ...);
+typedef BOOL     (STDCALL *SetWindowText_fn)(void *hWnd, const char *lpString);
 
-typedef i32   (STDCALL *CreateDXGIFactory1_fn)(const GUID &riid, void **ppFactory);
+typedef int32_t  (STDCALL *CreateDXGIFactory1_fn)(const GUID &riid, void **ppFactory);
 
-typedef i32   (STDCALL *D3D12CreateDevice_fn)(IUnknown *, D3D_FEATURE_LEVEL, const GUID &, void **);
-typedef i32   (STDCALL *D3D12GetDebugInterface_fn)(const GUID &, void **);
+typedef int32_t  (STDCALL *D3D12CreateDevice_fn)(IUnknown *, D3D_FEATURE_LEVEL, const GUID &, void **);
+typedef int32_t  (STDCALL *D3D12GetDebugInterface_fn)(const GUID &, void **);
 
 
 static OutputDebugString_fn         OutputDebugString;
