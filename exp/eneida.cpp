@@ -4,9 +4,7 @@
 // needed by VC when CRT is not used (/NODEFAULTLIBS)
 extern "C" { i32 _fltused; }
 
-
-
-static i64 STDCALL WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i64 Param2)
+i64 STDCALL Demo::WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i64 Param2)
 {
     switch (Message)
     {
@@ -20,139 +18,158 @@ static i64 STDCALL WindowsMessageHandler(void *Window, u32 Message, u64 Param1, 
 
 i32 Demo::Initialize()
 {
-    WNDCLASS Winclass = {};
-    Winclass.lpfnWndProc = WindowsMessageHandler;
-    Winclass.hInstance = GetModuleHandle(nullptr);
-    Winclass.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    Winclass.lpszClassName = kDemoName;
-    if (!RegisterClass(&Winclass)) return 0;
+    m_Kernel32 = LoadLibraryA("kernel32.dll");
+    m_User32 = LoadLibraryA("user32.dll");
+    m_Gdi32 = LoadLibraryA("gdi32.dll");
+    m_Dxgi = LoadLibraryA("dxgi.dll");
+    m_D3D12 = LoadLibraryA("d3d12.dll");
 
-    RECT Rect = { 0, 0, (i32)m_Resolution[0], (i32)m_Resolution[1] };
-    if (!AdjustWindowRect(&Rect, WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX, FALSE)) return 0;
+    OutputDebugString = (OutputDebugString_fn)GetProcAddress(m_Kernel32, "OutputDebugStringA");
+    ExitProcess = (ExitProcess_fn)GetProcAddress(m_Kernel32, "ExitProcess");
+    GetModuleHandle = (GetModuleHandle_fn)GetProcAddress(m_Kernel32, "GetModuleHandleA");
+    Sleep = (Sleep_fn)GetProcAddress(m_Kernel32, "Sleep");
+    CreateEventEx = (CreateEventEx_fn)GetProcAddress(m_Kernel32, "CreateEventExA");
+    WaitForSingleObject = (WaitForSingleObject_fn)GetProcAddress(m_Kernel32, "WaitForSingleObject");
+    QueryPerformanceCounter = (QueryPerformanceCounter_fn)GetProcAddress(m_Kernel32, "QueryPerformanceCounter");
+    QueryPerformanceFrequency = (QueryPerformanceFrequency_fn)GetProcAddress(m_Kernel32, "QueryPerformanceFrequency");
 
-    Demo->Window = CreateWindowEx(0, kDemoName, kDemoName,
-                                  WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_VISIBLE,
-                                  CW_USEDEFAULT, CW_USEDEFAULT,
-                                  Rect.right - Rect.left, Rect.bottom - Rect.top,
-                                  nullptr, nullptr, nullptr, 0);
-    if (!Demo->Window) return 0;
+    PeekMessage = (PeekMessage_fn)GetProcAddress(m_User32, "PeekMessageA");
+    DispatchMessage = (DispatchMessage_fn)GetProcAddress(m_User32, "DispatchMessageA");
+    PostQuitMessage = (PostQuitMessage_fn)GetProcAddress(m_User32, "PostQuitMessage");
+    DefWindowProc = (DefWindowProc_fn)GetProcAddress(m_User32, "DefWindowProcA");
+    LoadCursor = (LoadCursor_fn)GetProcAddress(m_User32, "LoadCursorA");
+    RegisterClass = (RegisterClass_fn)GetProcAddress(m_User32, "RegisterClassA");
+    CreateWindowEx = (CreateWindowEx_fn)GetProcAddress(m_User32, "CreateWindowExA");
+    AdjustWindowRect = (AdjustWindowRect_fn)GetProcAddress(m_User32, "AdjustWindowRect");
+    wsprintf = (wsprintf_fn)GetProcAddress(m_User32, "wsprintfA");
+    SetWindowText = (SetWindowText_fn)GetProcAddress(m_User32, "SetWindowTextA");
+
+    CreateDXGIFactory1 = (CreateDXGIFactory1_fn)GetProcAddress(m_Dxgi, "CreateDXGIFactory1");
+
+    D3D12GetDebugInterface = (D3D12GetDebugInterface_fn)GetProcAddress(m_D3D12, "D3D12GetDebugInterface");
+    D3D12CreateDevice = (D3D12CreateDevice_fn)GetProcAddress(m_D3D12, "D3D12CreateDevice");
+
+#ifdef _DEBUG
+    ID3D12Debug *dbg = nullptr;
+    D3D12GetDebugInterface(IID_ID3D12Debug, (void **)&dbg);
+    if (dbg)
+    {
+        dbg->EnableDebugLayer();
+        COMRELEASE(dbg);
+    }
+#endif
+
+    m_Resolution[0] = kDemoResX;
+    m_Resolution[1] = kDemoResY;
+
+    WNDCLASS wc = {};
+    wc.lpfnWndProc = WindowsMessageHandler;
+    wc.hInstance = GetModuleHandle(nullptr);
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wc.lpszClassName = kDemoName;
+    if (!RegisterClass(&wc)) return 0;
+
+    RECT rect = { 0, 0, (i32)m_Resolution[0], (i32)m_Resolution[1] };
+    if (!AdjustWindowRect(&rect, WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX, FALSE)) return 0;
+
+    m_Window = CreateWindowEx(0, kDemoName, kDemoName,
+                              WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_VISIBLE,
+                              CW_USEDEFAULT, CW_USEDEFAULT,
+                              rect.right - rect.left, rect.bottom - rect.top,
+                              nullptr, nullptr, nullptr, 0);
+    Assert(m_Window);
 
  
-    IDXGIFactory4 *FactoryDXGI = nullptr;
-    COMCHECK(CreateDXGIFactory1(IID_IDXGIFactory4, (void **)&FactoryDXGI));
-    COMCHECK(D3D12CreateDevice(0, D3D_FEATURE_LEVEL_12_0, IID_ID3D12Device, (void **)&Demo->Gpu));
+    IDXGIFactory4* factory_dxgi = nullptr;
+    COMCHECK(CreateDXGIFactory1(IID_IDXGIFactory4, (void**)&factory_dxgi));
+    COMCHECK(D3D12CreateDevice(0, D3D_FEATURE_LEVEL_12_0, IID_ID3D12Device, (void**)&m_Gpu));
 
-    D3D12_COMMAND_QUEUE_DESC CmdQueueDesc = {};
-    CmdQueueDesc.Flags    = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    CmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-    CmdQueueDesc.Type     = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    COMCHECK(Demo->Gpu->CreateCommandQueue(&CmdQueueDesc, IID_ID3D12CommandQueue, (void **)&Demo->CmdQueue));
+    D3D12_COMMAND_QUEUE_DESC cmd_queue_desc = {};
+    cmd_queue_desc.Flags    = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    cmd_queue_desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+    cmd_queue_desc.Type     = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    COMCHECK(m_Gpu->CreateCommandQueue(&cmd_queue_desc, IID_ID3D12CommandQueue, (void**)&m_CmdQueue));
 
-    DXGI_SWAP_CHAIN_DESC SwapchainDesc = {};
-    SwapchainDesc.BufferCount       = kNumSwapbuffers;
-    SwapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    SwapchainDesc.BufferUsage       = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    SwapchainDesc.OutputWindow      = Demo->Window;
-    SwapchainDesc.SampleDesc.Count  = 1;
-    SwapchainDesc.SwapEffect        = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    SwapchainDesc.Windowed          = (kDemoFullscreen ? FALSE : TRUE);
+    DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
+    swapchain_desc.BufferCount       = kNumSwapbuffers;
+    swapchain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapchain_desc.BufferUsage       = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapchain_desc.OutputWindow      = m_Window;
+    swapchain_desc.SampleDesc.Count  = 1;
+    swapchain_desc.SwapEffect        = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    swapchain_desc.Windowed          = (kDemoFullscreen ? FALSE : TRUE);
 
-    IDXGISwapChain *Swapchain = nullptr;
-    COMCHECK(FactoryDXGI->CreateSwapChain(Demo->CmdQueue, &SwapchainDesc, &Swapchain));
-    COMCHECK(Swapchain->QueryInterface(IID_IDXGISwapChain3, (void **)&Demo->Swapchain));
-    COMRELEASE(Swapchain);
-    COMRELEASE(FactoryDXGI);
+    IDXGISwapChain *swapchain = nullptr;
+    COMCHECK(factory_dxgi->CreateSwapChain(m_CmdQueue, &swapchain_desc, &swapchain));
+    COMCHECK(swapchain->QueryInterface(IID_IDXGISwapChain3, (void**)&m_Swapchain));
+    COMRELEASE(swapchain);
+    COMRELEASE(factory_dxgi);
 
-    Demo->RtvSize = Demo->Gpu->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    Demo->CbvSrvUavSize = Demo->Gpu->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    m_RtvSize = m_Gpu->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    m_CbvSrvUavSize = m_Gpu->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 
-    D3D12_DESCRIPTOR_HEAP_DESC RtvHeapDesc = {};
-    RtvHeapDesc.NumDescriptors = kNumSwapbuffers;
-    RtvHeapDesc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    RtvHeapDesc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    COMCHECK(Demo->Gpu->CreateDescriptorHeap(&RtvHeapDesc, IID_ID3D12DescriptorHeap, (void **)&Demo->RtvHeap));
-    Demo->RtvHeapStart = Demo->RtvHeap->GetCPUDescriptorHandleForHeapStart();
+    D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc = {};
+    rtv_heap_desc.NumDescriptors = kNumSwapbuffers;
+    rtv_heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtv_heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    COMCHECK(m_Gpu->CreateDescriptorHeap(&rtv_heap_desc, IID_ID3D12DescriptorHeap, (void**)&m_RtvHeap));
+    m_RtvHeapStart = m_RtvHeap->GetCPUDescriptorHandleForHeapStart();
 
-    D3D12_CPU_DESCRIPTOR_HANDLE RtvHandle = Demo->RtvHeapStart;
+    D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = m_RtvHeapStart;
 
-    for (u32 BufferIdx = 0; BufferIdx < kNumSwapbuffers; ++BufferIdx)
+    for (u32 i = 0; i < kNumSwapbuffers; ++i)
     {
-        COMCHECK(Demo->Swapchain->GetBuffer(BufferIdx, IID_ID3D12Resource, (void **)&Demo->Swapbuffers[BufferIdx]));
+        COMCHECK(m_Swapchain->GetBuffer(i, IID_ID3D12Resource, (void**)&m_Swapbuffers[i]));
 
-        Demo->Gpu->CreateRenderTargetView(Demo->Swapbuffers[BufferIdx], nullptr, RtvHandle);
-        RtvHandle.ptr += Demo->RtvSize;
+        m_Gpu->CreateRenderTargetView(m_Swapbuffers[i], nullptr, rtv_handle);
+        rtv_handle.ptr += m_RtvSize;
     }
 
-    Demo->Viewport = { 0.0f, 0.0f, (f32)Demo->Resolution[0], (f32)Demo->Resolution[1], 0.0f, 1.0f };
-    Demo->ScissorRect = { 0, 0, (i32)Demo->Resolution[0], (i32)Demo->Resolution[1] };
+    m_Viewport = { 0.0f, 0.0f, (float)m_Resolution[0], (float)m_Resolution[1], 0.0f, 1.0f };
+    m_ScissorRect = { 0, 0, (i32)m_Resolution[0], (i32)m_Resolution[1] };
 
 
-    for (u32 FrameIdx = 0; FrameIdx < kNumBufferedFrames; ++FrameIdx)
+    for (u32 i = 0; i <kNumBufferedFrames; ++i)
     {
-        frame_resources *Fres = &Demo->FrameResources[FrameIdx];
-
-        // command allocator
-        COMCHECK(Demo->Gpu->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                   IID_ID3D12CommandAllocator, (void **)&Fres->CmdAlloc));
-
-
-        // GPU visible decriptor heap
-        D3D12_DESCRIPTOR_HEAP_DESC HeapDesc = {};
-        HeapDesc.NumDescriptors = kNumGpuDescriptors;
-        HeapDesc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        HeapDesc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        COMCHECK(Demo->Gpu->CreateDescriptorHeap(&HeapDesc, IID_ID3D12DescriptorHeap,
-                                                 (void **)&Fres->Heap));
-
-        Fres->HeapCpuStart = Fres->Heap->GetCPUDescriptorHandleForHeapStart();
-        Fres->HeapGpuStart = Fres->Heap->GetGPUDescriptorHandleForHeapStart();
-
-
-        // constant buffer
-        D3D12_HEAP_PROPERTIES HeapProps = {};
-        HeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-        D3D12_RESOURCE_DESC BufferDesc = {};
-        BufferDesc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
-        BufferDesc.Width            = 64 * 1024;
-        BufferDesc.Height           = 1;
-        BufferDesc.DepthOrArraySize = 1;
-        BufferDesc.MipLevels        = 1;
-        BufferDesc.SampleDesc.Count = 1;
-        BufferDesc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-        COMCHECK(Demo->Gpu->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc,
-                                                    D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-                                                    IID_ID3D12Resource, (void **)&Fres->Cb));
+        m_FrameResources[i].Create(m_Gpu);
     }
 
-    Demo->FrameSync.Value = 0;
-    COMCHECK(Demo->Gpu->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_ID3D12Fence,
-                                    (void **)&Demo->FrameSync.Fence));
-    Demo->FrameSync.Event = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
-    Assert(Demo->FrameSync.Event);
+    m_FrameFenceValue = 0;
+    COMCHECK(m_Gpu->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_ID3D12Fence, (void**)&m_FrameFence));
+    m_FrameFenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+    Assert(m_FrameFenceEvent);
 
 
-    COMCHECK(Demo->Gpu->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Demo->FrameResources[0].CmdAlloc,
-                                          nullptr, IID_ID3D12GraphicsCommandList, (void **)&Demo->CmdList));
+    COMCHECK(m_Gpu->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_FrameResources[0].m_CmdAlloc,
+                                      nullptr, IID_ID3D12GraphicsCommandList, (void**)&m_CmdList));
     return 1;
 }
 
-static void
-Shutdown(demo_state *Demo)
+void Demo::Shutdown()
 {
-    if (Demo->CmdQueue && Demo->FrameSync.Fence)
-    {
-        //WaitForGpu(Demo->CmdQueue, &Demo->FrameSync);
-    }
-
+    WaitForGpu();
     //ShutdownDemo(Demo);
 
-    COMRELEASE(Demo->Swapchain);
-    COMRELEASE(Demo->CmdQueue);
-    COMRELEASE(Demo->Gpu);
+    COMRELEASE(m_Swapchain);
+    COMRELEASE(m_CmdQueue);
+    COMRELEASE(m_Gpu);
 }
 
+void Demo::WaitForGpu()
+{
+    if (m_CmdQueue && m_FrameFence)
+    {
+        m_CmdQueue->Signal(m_FrameFence, ++m_FrameFenceValue);
+
+        if (m_FrameFence->GetCompletedValue() < m_FrameFenceValue)
+        {
+            m_FrameFence->SetEventOnCompletion(m_FrameFenceValue, m_FrameFenceEvent);
+            WaitForSingleObject(m_FrameFenceEvent, INFINITE);
+        }
+    }
+}
+/*
 static void
 UpdateScene1(demo_state *Demo)
 {
@@ -189,84 +206,73 @@ UpdateScene1(demo_state *Demo)
 
     CmdList->Close();
 }
+*/
 
-static void
-Run(demo_state *Demo)
+void Demo::Run()
 {
+
+    UpdateFrameStats(m_Window, &m_Time, &m_TimeDelta);
     //UpdateDemo(Demo);
 
-    Demo->Swapchain->Present(0, 0);
+    m_Swapchain->Present(0, 0);
 
-    frame_sync *Sync = &Demo->FrameSync;
+    const u64 CpuValue = ++m_FrameFenceValue;
+    m_CmdQueue->Signal(m_FrameFence, CpuValue);
 
-    const u64 CpuValue = ++Sync->Value;
-    Demo->CmdQueue->Signal(Sync->Fence, CpuValue);
-
-    const u64 GpuValue = Sync->Fence->GetCompletedValue();
+    const u64 GpuValue = m_FrameFence->GetCompletedValue();
 
     if ((CpuValue - GpuValue) >= kNumBufferedFrames)
     {
-        Sync->Fence->SetEventOnCompletion(GpuValue + 1, Sync->Event);
-        WaitForSingleObject(Sync->Event, INFINITE);
+        m_FrameFence->SetEventOnCompletion(GpuValue + 1, m_FrameFenceEvent);
+        WaitForSingleObject(m_FrameFenceEvent, INFINITE);
     }
 
-    Demo->SwapbufferIndex = Demo->Swapchain->GetCurrentBackBufferIndex();
-    Demo->FrameIndex = ++Demo->FrameIndex % kNumBufferedFrames;
+    m_SwapbufferIndex = m_Swapchain->GetCurrentBackBufferIndex();
+    m_FrameIndex = ++m_FrameIndex % kNumBufferedFrames;
 }
 
-void
-Start()
+void FrameResources::Create(ID3D12Device* gpu)
 {
-    s_Kernel32 = LoadLibraryA("kernel32.dll");
-    s_User32 = LoadLibraryA("user32.dll");
-    s_Gdi32 = LoadLibraryA("gdi32.dll");
-    s_Dxgi = LoadLibraryA("dxgi.dll");
-    s_D3D12 = LoadLibraryA("d3d12.dll");
+        // command allocator
+        COMCHECK(gpu->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                             IID_ID3D12CommandAllocator, (void**)&m_CmdAlloc));
 
-    OutputDebugString = (OutputDebugString_fn)GetProcAddress(s_Kernel32, "OutputDebugStringA");
-    ExitProcess = (ExitProcess_fn)GetProcAddress(s_Kernel32, "ExitProcess");
-    GetModuleHandle = (GetModuleHandle_fn)GetProcAddress(s_Kernel32, "GetModuleHandleA");
-    Sleep = (Sleep_fn)GetProcAddress(s_Kernel32, "Sleep");
-    CreateEventEx = (CreateEventEx_fn)GetProcAddress(s_Kernel32, "CreateEventExA");
-    WaitForSingleObject = (WaitForSingleObject_fn)GetProcAddress(s_Kernel32, "WaitForSingleObject");
-    QueryPerformanceCounter = (QueryPerformanceCounter_fn)GetProcAddress(s_Kernel32, "QueryPerformanceCounter");
-    QueryPerformanceFrequency = (QueryPerformanceFrequency_fn)GetProcAddress(s_Kernel32, "QueryPerformanceFrequency");
+        // GPU visible decriptor heap
+        D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
+        heap_desc.NumDescriptors = kNumGpuDescriptors;
+        heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        COMCHECK(gpu->CreateDescriptorHeap(&heap_desc, IID_ID3D12DescriptorHeap, (void**)&m_Heap));
 
-    PeekMessage = (PeekMessage_fn)GetProcAddress(s_User32, "PeekMessageA");
-    DispatchMessage = (DispatchMessage_fn)GetProcAddress(s_User32, "DispatchMessageA");
-    PostQuitMessage = (PostQuitMessage_fn)GetProcAddress(s_User32, "PostQuitMessage");
-    DefWindowProc = (DefWindowProc_fn)GetProcAddress(s_User32, "DefWindowProcA");
-    LoadCursor = (LoadCursor_fn)GetProcAddress(s_User32, "LoadCursorA");
-    RegisterClass = (RegisterClass_fn)GetProcAddress(s_User32, "RegisterClassA");
-    CreateWindowEx = (CreateWindowEx_fn)GetProcAddress(s_User32, "CreateWindowExA");
-    AdjustWindowRect = (AdjustWindowRect_fn)GetProcAddress(s_User32, "AdjustWindowRect");
-    wsprintf = (wsprintf_fn)GetProcAddress(s_User32, "wsprintfA");
-    SetWindowText = (SetWindowText_fn)GetProcAddress(s_User32, "SetWindowTextA");
+        m_HeapCpuStart = m_Heap->GetCPUDescriptorHandleForHeapStart();
+        m_HeapGpuStart = m_Heap->GetGPUDescriptorHandleForHeapStart();
 
-    CreateDXGIFactory1 = (CreateDXGIFactory1_fn)GetProcAddress(s_Dxgi, "CreateDXGIFactory1");
 
-    D3D12GetDebugInterface = (D3D12GetDebugInterface_fn)GetProcAddress(s_D3D12, "D3D12GetDebugInterface");
-    D3D12CreateDevice = (D3D12CreateDevice_fn)GetProcAddress(s_D3D12, "D3D12CreateDevice");
+        // constant buffer
+        D3D12_HEAP_PROPERTIES HeapProps = {};
+        HeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
 
-#ifdef _DEBUG
-    ID3D12Debug *Dbg = nullptr;
-    D3D12GetDebugInterface(IID_ID3D12Debug, (void **)&Dbg);
-    if (Dbg)
-    {
-        Dbg->EnableDebugLayer();
-        COMRELEASE(Dbg);
-    }
-#endif
+        D3D12_RESOURCE_DESC BufferDesc = {};
+        BufferDesc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
+        BufferDesc.Width            = 64 * 1024;
+        BufferDesc.Height           = 1;
+        BufferDesc.DepthOrArraySize = 1;
+        BufferDesc.MipLevels        = 1;
+        BufferDesc.SampleDesc.Count = 1;
+        BufferDesc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+        COMCHECK(gpu->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc,
+                                              D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                              IID_ID3D12Resource, (void **)&m_Cb));
+}
 
-    demo_state Demo = {};
-    Demo.Resolution[0] = kDemoResX;
-    Demo.Resolution[1] = kDemoResY;
+void Start()
+{
+    Demo demo = {};
 
-    if (!Initialize(&Demo))
+    if (!demo.Initialize())
     {
         ExitProcess(1);
     }
-
 
     MSG Message = {};
     for (;;)
@@ -278,7 +284,6 @@ Start()
         }
         else
         {
-            UpdateFrameStats(Demo.Window, &Demo.Time, &Demo.TimeDelta);
         }
     }
 

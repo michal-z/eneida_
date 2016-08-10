@@ -26,7 +26,8 @@ class Demo;
 class FrameResources
 {
 public:
-    i32 Initialize(Demo* demo);
+    void Create(ID3D12Device* gpu);
+    void Shutdown();
 
     ID3D12CommandAllocator*     m_CmdAlloc;
     ID3D12Resource*             m_Cb;
@@ -42,6 +43,7 @@ class Demo
 public:
     i32  Initialize();
     void Shutdown();
+    void Run();
     void WaitForGpu();
 
     u32                         m_FrameIndex;
@@ -72,4 +74,6 @@ private:
     void*                       m_Gdi32;
     void*                       m_Dxgi;
     void*                       m_D3D12;
+
+    static i64 STDCALL WindowsMessageHandler(void *Window, u32 Message, u64 Param1, i64 Param2);
 };
