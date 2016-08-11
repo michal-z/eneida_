@@ -1,4 +1,4 @@
-class Scene1
+class TestScene1
 {
 public:
     int32_t Initialize()

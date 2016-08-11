@@ -55,7 +55,7 @@ static struct
     ID3D12DescriptorHeap*       m_RtvHeap;
     D3D12_CPU_DESCRIPTOR_HANDLE m_RtvHeapStart;
     FrameResources              m_FrameResources[kNumBufferedFrames];
-    MemoryArena                 m_Allocator;
+    MemoryArena                 m_CommonMemory;
 } G;
 
 static void FlushGpu();

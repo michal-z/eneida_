@@ -1,6 +1,6 @@
 ﻿#include "eneida.h"
 #include "eneida_lib.cpp"
-#include "eneida_scene1.cpp"
+#include "eneida_test_scene1.cpp"
 
 // needed by VC when CRT is not used (/NODEFAULTLIBS)
 extern "C" { int32_t _fltused; }
@@ -271,7 +271,7 @@ static int32_t Run()
 
 
 
-    Scene1 scene = {};
+    TestScene1 scene = {};
     if (!scene.Initialize())
     {
         scene.Shutdown();

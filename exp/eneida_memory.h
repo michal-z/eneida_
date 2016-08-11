@@ -11,6 +11,33 @@ public:
 
     void* Allocate(uint64_t size, uint64_t alignment = 8)
     {
+        Assert(m_TempAllocations == 0);
+        return AllocateImpl(size, alignment);
+    }
+
+    void* AllocateTemp(uint64_t size, uint64_t alignment = 8)
+    {
+        Assert(m_TempAllocations > 0);
+        return AllocateImpl(size, alignment);
+    }
+
+    void BeginTempAllocations()
+    {
+        Assert((m_TempAllocations + 1) < kMaxTempAllocationsNestLevel);
+
+        m_TempOffsets[m_TempAllocations++] = m_Offset;
+    }
+
+    void EndTempAllocations()
+    {
+        Assert(m_TempAllocations > 0);
+
+        m_Offset = m_TempOffsets[--m_TempAllocations];
+    }
+
+private:
+    void* AllocateImpl(uint64_t size, uint64_t alignment)
+    {
         uint64_t alignment_offset = GetAlignmentOffset(alignment);
         uint64_t alloc_size = m_Size + alignment_offset;
 
@@ -24,21 +51,6 @@ public:
         return result;
     }
 
-    void BeginTempAllocations()
-    {
-        Assert((m_TempAllocations + 1) < kMaxNestedTempAllocations);
-
-        m_TempOffsets[m_TempAllocations++] = m_Offset;
-    }
-
-    void EndTempAllocations()
-    {
-        Assert(m_TempAllocations > 0);
-
-        m_Offset = m_TempOffsets[--m_TempAllocations];
-    }
-
-private:
     uint64_t GetAlignmentOffset(uint64_t alignment)
     {
         uint64_t current_addr = (uint64_t)m_Base + m_Offset;
@@ -52,10 +64,10 @@ private:
         return alignment_offset;
     }
 
-    static const int32_t kMaxNestedTempAllocations = 16;
+    static const int32_t kMaxTempAllocationsNestLevel = 16;
 
     int32_t  m_TempAllocations;
-    uint64_t m_TempOffsets[kMaxNestedTempAllocations];
+    uint64_t m_TempOffsets[kMaxTempAllocationsNestLevel];
     uint64_t m_Offset;
     uint8_t* m_Base;
     uint64_t m_Size;
