@@ -26,7 +26,7 @@ public:
 
     void BeginTempAllocations()
     {
-        Assert((m_TempAllocations + 1) < kMaxNumTempAllocations);
+        Assert((m_TempAllocations + 1) < kMaxNestedTempAllocations);
 
         m_TempOffsets[m_TempAllocations++] = m_Offset;
     }
@@ -52,10 +52,10 @@ private:
         return alignment_offset;
     }
 
-    static const int32_t kMaxNumTempAllocations = 16;
+    static const int32_t kMaxNestedTempAllocations = 16;
 
     int32_t  m_TempAllocations;
-    uint64_t m_TempOffsets[kMaxNumTempAllocations];
+    uint64_t m_TempOffsets[kMaxNestedTempAllocations];
     uint64_t m_Offset;
     uint8_t* m_Base;
     uint64_t m_Size;
