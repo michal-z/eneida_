@@ -19,22 +19,7 @@
 #define kNumBufferedFrames 3
 #define kNumGpuDescriptors 1000
 
-#include "eneida_memory.h"
-
-static uint32_t                    s_FrameIndex;
-static uint32_t                    s_Resolution[2];
-static double                      s_Time;
-static float                       s_TimeDelta;
-static ID3D12Device*               s_Gpu;
-static ID3D12CommandQueue*         s_CmdQueue;
-static ID3D12GraphicsCommandList*  s_CmdList;
-static uint32_t                    s_RtvSize;
-static uint32_t                    s_CbvSrvUavSize;
-static D3D12_VIEWPORT              s_Viewport;
-static D3D12_RECT                  s_ScissorRect;
-static ID3D12DescriptorHeap*       s_RtvHeap;
-static D3D12_CPU_DESCRIPTOR_HANDLE s_RtvHeapStart;
-static struct FrameResources
+struct FrameResources
 {
     ID3D12CommandAllocator*     m_CmdAlloc;
     ID3D12Resource*             m_Cb;
@@ -43,6 +28,36 @@ static struct FrameResources
     ID3D12DescriptorHeap*       m_Heap;
     D3D12_CPU_DESCRIPTOR_HANDLE m_HeapCpuStart;
     D3D12_GPU_DESCRIPTOR_HANDLE m_HeapGpuStart;
-}                                  s_FrameResources[kNumBufferedFrames];
+};
+
+struct ResourceSListNode
+{
+    ResourceSListNode* m_Next;
+    ID3D12Resource*    m_Resource;
+};
+
+#include "eneida_memory.h"
+
+// global read-only state
+static struct
+{
+    uint32_t                    m_FrameIndex;
+    uint32_t                    m_Resolution[2];
+    double                      m_Time;
+    float                       m_TimeDelta;
+    ID3D12Device*               m_Gpu;
+    ID3D12CommandQueue*         m_CmdQueue;
+    ID3D12GraphicsCommandList*  m_CmdList;
+    uint32_t                    m_RtvSize;
+    uint32_t                    m_CbvSrvUavSize;
+    D3D12_VIEWPORT              m_Viewport;
+    D3D12_RECT                  m_ScissorRect;
+    ID3D12DescriptorHeap*       m_RtvHeap;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_RtvHeapStart;
+    FrameResources              m_FrameResources[kNumBufferedFrames];
+    MemoryArena                 m_Allocator;
+} G;
 
 static void FlushGpu();
+extern "C" void* memset(void* dest, int32_t value, size_t length); // defined in eneida_asmlib.asm
+

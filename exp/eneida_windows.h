@@ -1734,7 +1734,7 @@ struct D3D12_TEX2DMS_ARRAY_DSV
 enum D3D12_DSV_FLAGS
 {
     D3D12_DSV_FLAG_NONE	             = 0,
-    D3D12_DSV_FLAG_READ_ONLY_DEPTH	 = 0x1,
+    D3D12_DSV_FLAG_READ_ONLY_DEPTH   = 0x1,
     D3D12_DSV_FLAG_READ_ONLY_STENCIL = 0x2
 };
 
@@ -2175,8 +2175,8 @@ enum DXGI_MODE_ROTATION
 
 struct DXGI_MODE_DESC
 {
-    uint32_t                      Width;
-    uint32_t                      Height;
+    uint32_t                 Width;
+    uint32_t                 Height;
     DXGI_RATIONAL            RefreshRate;
     DXGI_FORMAT              Format;
     DXGI_MODE_SCANLINE_ORDER ScanlineOrdering;
@@ -2194,8 +2194,8 @@ struct DXGI_OUTPUT_DESC
 
 struct DXGI_SURFACE_DESC
 {
-    uint32_t              Width;
-    uint32_t              Height;
+    uint32_t         Width;
+    uint32_t         Height;
     DXGI_FORMAT      Format;
     DXGI_SAMPLE_DESC SampleDesc;
 };
@@ -2203,7 +2203,7 @@ struct DXGI_SURFACE_DESC
 struct DXGI_MAPPED_RECT
 {
     int32_t Pitch;
-    uint8_t  *pBits;
+    uint8_t *pBits;
 };
 
 struct DXGI_FRAME_STATISTICS
@@ -2211,8 +2211,8 @@ struct DXGI_FRAME_STATISTICS
     uint32_t PresentCount;
     uint32_t PresentRefreshCount;
     uint32_t SyncRefreshCount;
-    int64_t SyncQPCTime;
-    int64_t SyncGPUTime;
+    int64_t  SyncQPCTime;
+    int64_t  SyncGPUTime;
 };
 
 struct DXGI_ADAPTER_DESC

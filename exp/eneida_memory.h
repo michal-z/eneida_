@@ -1,77 +1,62 @@
-struct memory_arena
+class MemoryArena
 {
-    uint8_t  *Base;
-    uint64_t Offset;
-    uint64_t Size;
-    int32_t TempAllocations;
-};
-
-struct temporary_memory
-{
-    memory_arena *Arena;
-    uint64_t          Offset;
-};
-
-inline void
-InitializeArena(memory_arena *Arena, uint64_t Size, void *Base)
-{
-    Arena->Base = (uint8_t *)Base;
-    Arena->Offset = 0;
-    Arena->Size = Size;
-    Arena->TempAllocations = 0;
-}
-
-inline uint64_t
-GetAlignmentOffset(memory_arena *Arena, uint64_t Alignment)
-{
-    uint64_t CurrentAddr = (uint64_t)Arena->Base + Arena->Offset;
-    uint64_t AlignmentOffset = 0;
-
-    if (CurrentAddr & (Alignment - 1))
+public:
+    void Initialize(uint64_t size, void* base)
     {
-        AlignmentOffset = Alignment - (CurrentAddr & (Alignment - 1));
+        m_Base = (uint8_t *)base;
+        m_Offset = 0;
+        m_Size = size;
+        m_TempAllocations = 0;
     }
 
-    return AlignmentOffset;
-}
+    void* Allocate(uint64_t size, uint64_t alignment = 8)
+    {
+        uint64_t alignment_offset = GetAlignmentOffset(alignment);
+        uint64_t alloc_size = m_Size + alignment_offset;
 
-inline void *
-Allocate(memory_arena *Arena, uint64_t Size, uint64_t Alignment = 8)
-{
-    uint64_t AlignmentOffset = GetAlignmentOffset(Arena, Alignment);
-    uint64_t AllocSize = Size + AlignmentOffset;
-    
-    Assert((Arena->Offset + AllocSize) <= Arena->Size);
+        Assert((m_Offset + alloc_size) <= m_Size);
 
-    void *Result = (void *)((uint64_t)Arena->Base + Arena->Offset + AlignmentOffset);
-    Arena->Offset += AllocSize;
+        void* result = (void*)((uint64_t)m_Base + m_Offset + alignment_offset);
+        m_Offset += alloc_size;
 
-    Assert(AllocSize >= Size);
+        Assert(alloc_size >= m_Size);
 
-    return Result;
-}
+        return result;
+    }
 
-inline temporary_memory
-BeginTemporaryMemory(memory_arena *Arena)
-{
-    temporary_memory Result;
+    void BeginTempAllocations()
+    {
+        Assert((m_TempAllocations + 1) < kMaxNumTempAllocations);
 
-    Result.Arena = Arena;
-    Result.Offset = Arena->Offset;
+        m_TempOffsets[m_TempAllocations++] = m_Offset;
+    }
 
-    Arena->TempAllocations++;
+    void EndTempAllocations()
+    {
+        Assert(m_TempAllocations > 0);
 
-    return Result;
-}
+        m_Offset = m_TempOffsets[--m_TempAllocations];
+    }
 
-inline void
-EndTemporaryMemory(temporary_memory TempMem)
-{
-    memory_arena *Arena = TempMem.Arena;
+private:
+    uint64_t GetAlignmentOffset(uint64_t alignment)
+    {
+        uint64_t current_addr = (uint64_t)m_Base + m_Offset;
+        uint64_t alignment_offset = 0;
 
-    Assert(Arena->Offset >= TempMem.Offset);
-    Arena->Offset = TempMem.Offset;
+        if (current_addr & (alignment - 1))
+        {
+            alignment_offset = alignment - (current_addr & (alignment - 1));
+        }
 
-    Assert(Arena->TempAllocations > 0);
-    Arena->TempAllocations--;
-}
+        return alignment_offset;
+    }
+
+    static const int32_t kMaxNumTempAllocations = 16;
+
+    int32_t  m_TempAllocations;
+    uint64_t m_TempOffsets[kMaxNumTempAllocations];
+    uint64_t m_Offset;
+    uint8_t* m_Base;
+    uint64_t m_Size;
+};
