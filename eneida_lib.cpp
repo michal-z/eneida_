@@ -1,140 +1,85 @@
-﻿static void
-UnloadFile(void *Addr)
+﻿static double GetTime()
 {
-    Assert(Addr);
-    VirtualFree(Addr, 0, MEM_RELEASE);
+    static int64_t freq;
+    static int64_t start_counter;
+
+    if (freq == 0)
+    {
+        QueryPerformanceFrequency(&freq);
+        QueryPerformanceCounter(&start_counter);
+    }
+    int64_t counter;
+    QueryPerformanceCounter(&counter);
+    return (counter - start_counter) / (double)freq;
 }
 
-static void *
-LoadFile(const char *Filename, size_t *Filesize)
+static void UpdateFrameStats(void* win, double* time, float* time_delta)
 {
-    if (!Filename || !Filesize) return nullptr;
+    static double prev_time = -1.0;
+    static double prev_fps_time = 0.0;
+    static uint32_t fps_frame = 0;
 
-    HANDLE File = CreateFile(Filename, GENERIC_READ, 0, nullptr, OPEN_EXISTING,
-                             FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (File == INVALID_HANDLE_VALUE) return nullptr;
-
-    DWORD Size = GetFileSize(File, nullptr);
-    if (Size == INVALID_FILE_SIZE)
+    if (prev_time < 0.0)
     {
-        CloseHandle(File);
-        return nullptr;
+        prev_time = GetTime();
+        prev_fps_time = prev_time;
     }
 
-    void *Data = VirtualAlloc(nullptr, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    if (!Data)
-    {
-        CloseHandle(File);
-        return nullptr;
-    }
+    *time = GetTime();
+    *time_delta = (float)(*time - prev_time);
+    prev_time = *time;
 
-    DWORD Bytes;
-    BOOL Res = ReadFile(File, Data, Size, &Bytes, nullptr);
-    if (!Res || (Bytes != Size))
+    if ((*time - prev_fps_time) >= 1.0)
     {
-        CloseHandle(File);
-        UnloadFile(Data);
-        return nullptr;
+        double fps = fps_frame / (*time - prev_fps_time);
+        double micro_sec = (1.0 / fps) * 1000000.0;
+        char text[256];
+        wsprintf(text, "[%d fps  %d us] %s", (int32_t)fps, (int32_t)micro_sec, kDemoName);
+        SetWindowText(win, text);
+        prev_fps_time = *time;
+        fps_frame = 0;
     }
-
-    CloseHandle(File);
-    *Filesize = Size;
-    return Data;
+    fps_frame++;
 }
 
-static double
-GetTime()
+static void TransitionBarrier(ID3D12GraphicsCommandList* cmdlist, ID3D12Resource* resource,
+                              D3D12_RESOURCE_STATES state_before, D3D12_RESOURCE_STATES state_after)
 {
-    static LARGE_INTEGER Freq = {};
-    static LARGE_INTEGER StartCounter = {};
-
-    if (Freq.QuadPart == 0)
-    {
-        QueryPerformanceFrequency(&Freq);
-        QueryPerformanceCounter(&StartCounter);
-    }
-    LARGE_INTEGER Counter = {};
-    QueryPerformanceCounter(&Counter);
-    return (Counter.QuadPart - StartCounter.QuadPart) / (double)Freq.QuadPart;
+    D3D12_RESOURCE_BARRIER barrier_desc = {};
+    barrier_desc.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier_desc.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    barrier_desc.Transition.pResource   = resource;
+    barrier_desc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    barrier_desc.Transition.StateBefore = state_before;
+    barrier_desc.Transition.StateAfter  = state_after;
+    cmdlist->ResourceBarrier(1, &barrier_desc);
 }
 
-static void
-UpdateFrameStats(HWND Win, double *Time, float *TimeDelta)
+static ID3D12Resource* CreateUploadBuffer(uint64_t buffer_size, void** buffer_cpu_addr = nullptr)
 {
-    static double PrevTime = -1.0;
-    static double PrevFpsTime = 0.0;
-    static int FpsFrame = 0;
+    Assert(buffer_size > 0);
 
-    if (PrevTime < 0.0)
-    {
-        PrevTime = GetTime();
-        PrevFpsTime = PrevTime;
-    }
+    D3D12_HEAP_PROPERTIES heap_props = {};
+    heap_props.Type = D3D12_HEAP_TYPE_UPLOAD;
 
-    *Time = GetTime();
-    *TimeDelta = (float)(*Time - PrevTime);
-    PrevTime = *Time;
+    D3D12_RESOURCE_DESC buffer_desc = {};
+    buffer_desc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
+    buffer_desc.Width            = buffer_size;
+    buffer_desc.Height           = 1;
+    buffer_desc.DepthOrArraySize = 1;
+    buffer_desc.MipLevels        = 1;
+    buffer_desc.SampleDesc.Count = 1;
+    buffer_desc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
-    if ((*Time - PrevFpsTime) >= 1.0)
-    {
-        double Fps = FpsFrame / (*Time - PrevFpsTime);
-        double MicroS = (1.0 / Fps) * 1000000.0;
-        char Text[256];
-        wsprintf(Text, "[%d fps  %d us] %s", (int32_t)Fps, (int32_t)MicroS, kDemoName);
-        SetWindowText(Win, Text);
-        PrevFpsTime = *Time;
-        FpsFrame = 0;
-    }
-    FpsFrame++;
-}
-
-static void
-TransitionBarrier(ID3D12GraphicsCommandList *CmdList, ID3D12Resource *Resource,
-                  D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter)
-{
-    D3D12_RESOURCE_BARRIER BarrierDesc = {};
-    BarrierDesc.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    BarrierDesc.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    BarrierDesc.Transition.pResource   = Resource;
-    BarrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    BarrierDesc.Transition.StateBefore = StateBefore;
-    BarrierDesc.Transition.StateAfter  = StateAfter;
-    CmdList->ResourceBarrier(1, &BarrierDesc);
-}
-
-static ID3D12Resource *
-CreateUploadBuffer(ID3D12Device *Device, uint64_t BufferSize, void **BufferCpuPtr = nullptr)
-{
-    Assert(BufferSize > 0);
-
-    D3D12_HEAP_PROPERTIES HeapProps = {};
-    HeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-    D3D12_RESOURCE_DESC BufferDesc = {};
-    BufferDesc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
-    BufferDesc.Width            = BufferSize;
-    BufferDesc.Height           = 1;
-    BufferDesc.DepthOrArraySize = 1;
-    BufferDesc.MipLevels        = 1;
-    BufferDesc.SampleDesc.Count = 1;
-    BufferDesc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-    ID3D12Resource *UploadBuffer = nullptr;
-    HRESULT Hr = Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc,
-                                                 D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-                                                 IID_PPV_ARGS(&UploadBuffer));
-    if (FAILED(Hr)) return nullptr;
-
-    if (BufferCpuPtr)
+    ID3D12Resource* upload_buffer = nullptr;
+    COMCHECK(G.m_Gpu->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &buffer_desc,
+                                              D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                              IID_ID3D12Resource, (void**)&upload_buffer));
+    if (buffer_cpu_addr)
     {
         D3D12_RANGE range = {};
-        Hr = UploadBuffer->Map(0, &range, BufferCpuPtr);
-        if (FAILED(Hr))
-        {
-            SAFE_RELEASE(UploadBuffer);
-            return nullptr;
-        }
+        COMCHECK(upload_buffer->Map(0, &range, buffer_cpu_addr));
     }
 
-    return UploadBuffer;
+    return upload_buffer;
 }

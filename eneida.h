@@ -1,9 +1,4 @@
-﻿#include <stdint.h>
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <dxgi1_4.h>
-#include <d3d12.h>
-#include <immintrin.h>
+#include "eneida_windows.h"
 
 // TODO: Finish Assert implementation
 #ifdef _DEBUG
@@ -12,94 +7,65 @@
 #define Assert(Expression)
 #endif
 
+#define COMRELEASE(comobj) if ((comobj)) { (comobj)->Release(); (comobj) = nullptr; }
+#define COMCHECK(r) if ((r) != 0) { __debugbreak(); }
+
+#define kDemoName "eneida"
+#define kDemoResX 1280 
+#define kDemoResY 720
+#define kDemoFullscreen 0
+
 #define kNumSwapbuffers 4
 #define kNumBufferedFrames 3
 #define kNumGpuDescriptors 1000
 
-#define kDemoName "eneida"
-#define kDemoResX 1024
-#define kDemoResY 1024
-#define kDemoFullscreen 0
+#define kPersistentMemorySize (64 * 1024)
+#define kTemporaryMemorySize (32 * 1024)
 
-#define SAFE_RELEASE(x) if ((x)) { (x)->Release(); (x) = nullptr; }
+struct FrameResources
+{
+    ID3D12CommandAllocator*     m_CmdAlloc;
+    ID3D12Resource*             m_Cb;
+    void*                       m_CbCpuAddr;
+    D3D12_GPU_VIRTUAL_ADDRESS   m_CbGpuAddr;
+    ID3D12DescriptorHeap*       m_Heap;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_HeapCpuStart;
+    D3D12_GPU_DESCRIPTOR_HANDLE m_HeapGpuStart;
+};
 
-#include "eneida_math.h"
+struct ResourceSListNode
+{
+    ResourceSListNode* m_Next;
+    ID3D12Resource*    m_Resource;
+};
+
 #include "eneida_memory.h"
+#include "eneida_math.h"
 
-struct frame_resources
+// global read-only state
+static struct
 {
-    ID3D12CommandAllocator *CmdAlloc;
+    uint32_t                    m_FrameIndex;
+    uint32_t                    m_Resolution[2];
+    double                      m_Time;
+    float                       m_TimeDelta;
+    ID3D12Device*               m_Gpu;
+    ID3D12CommandQueue*         m_CmdQueue;
+    ID3D12GraphicsCommandList*  m_CmdList;
+    uint32_t                    m_RtvSize;
+    uint32_t                    m_SwapbufferIndex;
+    ID3D12Resource*             m_Swapbuffers[kNumSwapbuffers];
+    uint32_t                    m_CbvSrvUavSize;
+    D3D12_VIEWPORT              m_Viewport;
+    D3D12_RECT                  m_ScissorRect;
+    ID3D12DescriptorHeap*       m_RtvHeap;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_RtvHeapStart;
+    FrameResources              m_FrameResources[kNumBufferedFrames];
+    MemoryArena                 m_PersistentMemory;
+    MemoryArena                 m_TemporaryMemory;
+} G;
 
-    ID3D12Resource *Cb;
-    void *CbCpuAddr;
-    D3D12_GPU_VIRTUAL_ADDRESS CbGpuAddr;
-
-    ID3D12DescriptorHeap *Heap;
-    D3D12_CPU_DESCRIPTOR_HANDLE HeapCpuStart;
-    D3D12_GPU_DESCRIPTOR_HANDLE HeapGpuStart;
-};
-
-struct frame_sync
-{
-    ID3D12Fence *Fence;
-    uint64_t Value;
-    HANDLE Event;
-};
-
-struct mesh
-{
-    ID3D12Resource *VBuffer;
-    ID3D12Resource *IBuffer;
-    D3D12_VERTEX_BUFFER_VIEW VBufferView;
-    D3D12_INDEX_BUFFER_VIEW IBufferView;
-};
-
-struct demo_state
-{
-    uint32_t SwapbufferIndex;
-    uint32_t FrameIndex;
-    uint32_t Resolution[2];
-    double Time;
-    float TimeDelta;
-
-    HWND Hwnd;
-    IDXGIFactory4 *FactoryDxgi;
-    IDXGISwapChain3 *Swapchain;
-
-    ID3D12Device *Device;
-    ID3D12CommandQueue *CmdQueue;
-    ID3D12GraphicsCommandList *CmdList;
-
-    uint32_t RtvSize;
-    uint32_t CbvSrvUavSize;
-
-    ID3D12Resource *Swapbuffers[kNumSwapbuffers];
-
-    D3D12_VIEWPORT Viewport;
-    D3D12_RECT ScissorRect;
-
-    ID3D12DescriptorHeap *RtvHeap;
-    D3D12_CPU_DESCRIPTOR_HANDLE RtvHeapStart;
-
-    ID3D12PipelineState *XFormShadePso;
-
-    mesh Mesh;
-    memory_arena MemArena;
-    frame_sync FrameSync;
-    frame_resources FrameRes[kNumBufferedFrames];
-};
+static void FlushGpu();
 
 // defined in eneida_asmlib.asm
-extern "C" float Sin1f(float x);
-extern "C" float Cos1f(float x);
-
-// Dummy functions with empty implementations.
-// They can be used to inspect assembly generated
-// by the compiler. For example:
-// void *Data = LoadDummyData();
-// ProcessData(Data); // code to be inspected
-// StoreDummyData(Data);
-// This ensures that the code we are interested in
-// won't be optimized out.
-extern "C" void *LoadDummyData();
-extern "C" void StoreDummyData(void *);
+extern "C" void* memset(void* dest, int32_t value, size_t length);

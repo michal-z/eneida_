@@ -1,97 +1,26 @@
 struct float4
 {
-    float X, Y, Z, W;
+    float m_X;
+    float m_Y;
+    float m_Z;
+    float m_W;
 };
 
 struct float4x4
 {
-    float4 R[4];
+    float4 m_R[4];
 };
 
-inline float4
-operator+(const float4 &V0, const float4 &V1)
-{
-    float4 Res;
-    Res.X = V0.X + V1.X;
-    Res.Y = V0.Y + V1.Y;
-    Res.Z = V0.Z + V1.Z;
-    Res.W = V0.W + V1.W;
-    return Res;
-}
+// defined in eneida_asmlib.asm
+extern "C" float Sin1f(float x);
+extern "C" float Cos1f(float x);
 
-inline float4
-operator-(const float4 &V0, const float4 &V1)
+inline float4 operator+(const float4& v0, const float4& v1)
 {
-    float4 Res;
-    Res.X = V0.X - V1.X;
-    Res.Y = V0.Y - V1.Y;
-    Res.Z = V0.Z - V1.Z;
-    Res.W = V0.W - V1.W;
-    return Res;
-}
-
-inline float4
-operator*(const float4 &V0, const float4 &V1)
-{
-    float4 Res;
-    Res.X = V0.X * V1.X;
-    Res.Y = V0.Y * V1.Y;
-    Res.Z = V0.Z * V1.Z;
-    Res.W = V0.W * V1.W;
-    return Res;
-}
-
-inline float4
-operator/(const float4 &V0, const float4 &V1)
-{
-    float4 Res;
-    Res.X = V0.X / V1.X;
-    Res.Y = V0.Y / V1.Y;
-    Res.Z = V0.Z / V1.Z;
-    Res.W = V0.W / V1.W;
-    return Res;
-}
-
-inline float4x4
-operator+(const float4x4 &M0, const float4x4 &M1)
-{
-    float4x4 Res;
-    Res.R[0] = M0.R[0] + M1.R[0];
-    Res.R[1] = M0.R[1] + M1.R[1];
-    Res.R[2] = M0.R[2] + M1.R[2];
-    Res.R[3] = M0.R[3] + M1.R[3];
-    return Res;
-}
-
-inline float4x4
-operator-(const float4x4 &M0, const float4x4 &M1)
-{
-    float4x4 Res;
-    Res.R[0] = M0.R[0] - M1.R[0];
-    Res.R[1] = M0.R[1] - M1.R[1];
-    Res.R[2] = M0.R[2] - M1.R[2];
-    Res.R[3] = M0.R[3] - M1.R[3];
-    return Res;
-}
-
-inline float4x4
-operator*(const float4x4 &M0, const float4x4 &M1)
-{
-    float4x4 Res;
-    Res.R[0] = M0.R[0] * M1.R[0];
-    Res.R[1] = M0.R[1] * M1.R[1];
-    Res.R[2] = M0.R[2] * M1.R[2];
-    Res.R[3] = M0.R[3] * M1.R[3];
-    return Res;
-}
-
-inline float4x4
-operator/(const float4x4 &M0, const float4x4 &M1)
-{
-    float4x4 Res;
-    Res.R[0] = M0.R[0] / M1.R[0];
-    Res.R[1] = M0.R[1] / M1.R[1];
-    Res.R[2] = M0.R[2] / M1.R[2];
-    Res.R[3] = M0.R[3] / M1.R[3];
-    return Res;
+    float4 res;
+    res.m_X = v0.m_X + v1.m_X;
+    res.m_Y = v0.m_Y + v1.m_Y;
+    res.m_Z = v0.m_Z + v1.m_Z;
+    res.m_W = v0.m_W + v1.m_W;
+    return res;
 }
