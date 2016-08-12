@@ -23,7 +23,13 @@ typedef int                 BOOL;
 
 #define STANDARD_RIGHTS_REQUIRED 0x000F0000L
 #define SYNCHRONIZE              0x00100000L
-#define EVENT_ALL_ACCESS    (STANDARD_RIGHTS_REQUIRED|SYNCHRONIZE|0x3)
+#define EVENT_ALL_ACCESS         (STANDARD_RIGHTS_REQUIRED|SYNCHRONIZE|0x3)
+
+#define MEM_COMMIT  0x1000
+#define MEM_RESERVE 0x2000
+#define MEM_RELEASE 0x8000
+
+#define PAGE_READWRITE 0x04
 
 #define MAKEINTRESOURCE(i) ((char *)((uint64_t)((uint16_t)(i))))
 
@@ -2479,15 +2485,15 @@ struct IDXGIFactory2 : public IDXGIFactory1
                                                          const DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                                          IDXGIOutput *pRestrictToOutput,
                                                          IDXGISwapChain1 **ppSwapChain) = 0;
-    virtual int32_t  STDCALL GetSharedResourceAdapterLuid(void *hResource, LUID *pLuid) = 0;
-    virtual int32_t  STDCALL RegisterStereoStatusWindow(void *WindowHandle, uint32_t wMsg, uint32_t *pdwCookie) = 0;
-    virtual int32_t  STDCALL RegisterStereoStatusEvent(void *hEvent, uint32_t *pdwCookie) = 0;
-    virtual void     STDCALL UnregisterStereoStatus(uint32_t dwCookie) = 0;
-    virtual int32_t  STDCALL RegisterOcclusionStatusWindow(void *WindowHandle, uint32_t wMsg, uint32_t *pdwCookie) = 0;
-    virtual int32_t  STDCALL RegisterOcclusionStatusEvent(void *hEvent, uint32_t *pdwCookie) = 0;
-    virtual void     STDCALL UnregisterOcclusionStatus(uint32_t dwCookie) = 0;
-    virtual int32_t  STDCALL CreateSwapChainForComposition(IUnknown *pDevice, const DXGI_SWAP_CHAIN_DESC1 *pDesc,
-                                                       IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain) = 0;
+    virtual int32_t STDCALL GetSharedResourceAdapterLuid(void *hResource, LUID *pLuid) = 0;
+    virtual int32_t STDCALL RegisterStereoStatusWindow(void *WindowHandle, uint32_t wMsg, uint32_t *pdwCookie) = 0;
+    virtual int32_t STDCALL RegisterStereoStatusEvent(void *hEvent, uint32_t *pdwCookie) = 0;
+    virtual void    STDCALL UnregisterStereoStatus(uint32_t dwCookie) = 0;
+    virtual int32_t STDCALL RegisterOcclusionStatusWindow(void *WindowHandle, uint32_t wMsg, uint32_t *pdwCookie) = 0;
+    virtual int32_t STDCALL RegisterOcclusionStatusEvent(void *hEvent, uint32_t *pdwCookie) = 0;
+    virtual void    STDCALL UnregisterOcclusionStatus(uint32_t dwCookie) = 0;
+    virtual int32_t STDCALL CreateSwapChainForComposition(IUnknown *pDevice, const DXGI_SWAP_CHAIN_DESC1 *pDesc,
+                                                          IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain) = 0;
 };
 
 struct IDXGIFactory3 : public IDXGIFactory2
@@ -2528,6 +2534,8 @@ typedef void*    (STDCALL *CreateEventEx_fn)(SECURITY_ATTRIBUTES *lpEventAttribu
 typedef uint32_t (STDCALL *WaitForSingleObject_fn)(void *hHandle, uint32_t dwMilliseconds);
 typedef BOOL     (STDCALL *QueryPerformanceCounter_fn)(int64_t *lpPerformanceCount);
 typedef BOOL     (STDCALL *QueryPerformanceFrequency_fn)(int64_t *lpFrequency);
+typedef void*    (STDCALL *VirtualAlloc_fn)(void *lpAddress, size_t dwSize, uint32_t flAllocationType, uint32_t flProtect);
+typedef BOOL     (STDCALL *VirtualFree_fn)(void *lpAddress, size_t dwSize, uint32_t dwFreeType);
 
 typedef BOOL     (STDCALL *PeekMessage_fn)(MSG *msg, void *hwnd, uint32_t filter_min, uint32_t filter_max, uint32_t remove_msg);
 typedef int64_t  (STDCALL *DispatchMessage_fn)(const MSG *msg);
@@ -2536,8 +2544,8 @@ typedef int64_t  (STDCALL *DefWindowProc_fn)(void *hwnd, uint32_t msg, uint64_t 
 typedef void*    (STDCALL *LoadCursor_fn)(void *hinstance, const char *cursor_name);
 typedef int16_t  (STDCALL *RegisterClass_fn)(const WNDCLASS *wndclass);
 typedef void*    (STDCALL *CreateWindowEx_fn)(uint32_t ex_style, const char *class_name, const char *window_name,
-                                           uint32_t style, int32_t x, int32_t y, int32_t width, int32_t height,
-                                           void *hwnd_parent, void *hmenu, void *hinstance, void *param);
+                                              uint32_t style, int32_t x, int32_t y, int32_t width, int32_t height,
+                                              void *hwnd_parent, void *hmenu, void *hinstance, void *param);
 typedef BOOL     (STDCALL *AdjustWindowRect_fn)(RECT *lpRect, uint32_t dwStyle, BOOL bMenu);
 typedef int32_t  (__cdecl *wsprintf_fn)(char *str, const char *format, ...);
 typedef BOOL     (STDCALL *SetWindowText_fn)(void *hWnd, const char *lpString);
@@ -2556,6 +2564,8 @@ static CreateEventEx_fn             CreateEventEx;
 static WaitForSingleObject_fn       WaitForSingleObject;
 static QueryPerformanceCounter_fn   QueryPerformanceCounter;
 static QueryPerformanceFrequency_fn QueryPerformanceFrequency;
+static VirtualAlloc_fn              VirtualAlloc;
+static VirtualFree_fn               VirtualFree;
 
 static PeekMessage_fn               PeekMessage;
 static DispatchMessage_fn           DispatchMessage;

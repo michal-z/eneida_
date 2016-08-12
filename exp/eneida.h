@@ -19,6 +19,9 @@
 #define kNumBufferedFrames 3
 #define kNumGpuDescriptors 1000
 
+#define kPersistentMemorySize 64 * 1024
+#define kTemporaryMemorySize 32 * 1024
+
 struct FrameResources
 {
     ID3D12CommandAllocator*     m_CmdAlloc;
@@ -55,7 +58,8 @@ static struct
     ID3D12DescriptorHeap*       m_RtvHeap;
     D3D12_CPU_DESCRIPTOR_HANDLE m_RtvHeapStart;
     FrameResources              m_FrameResources[kNumBufferedFrames];
-    MemoryArena                 m_CommonMemory;
+    MemoryArena                 m_PersistentMemory;
+    MemoryArena                 m_TemporaryMemory;
 } G;
 
 static void FlushGpu();

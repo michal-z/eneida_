@@ -9,16 +9,30 @@ public:
         m_TempAllocations = 0;
     }
 
-    void* Allocate(uint64_t size, uint64_t alignment = 8)
+    void* GetAllocationBaseAddr(uint64_t size, uint64_t alignment = 8)
     {
-        Assert(m_TempAllocations == 0);
-        return AllocateImpl(size, alignment);
+        uint64_t alignment_offset = GetAlignmentOffset(alignment);
+        uint64_t alloc_size = size + alignment_offset;
+
+        Assert(alloc_size >= size);
+        Assert((m_Offset + alloc_size) <= m_Size);
+
+        return (void*)((uint64_t)m_Base + m_Offset + alignment_offset);
     }
 
-    void* AllocateTemp(uint64_t size, uint64_t alignment = 8)
+    void* Allocate(uint64_t size, uint64_t alignment = 8)
     {
-        Assert(m_TempAllocations > 0);
-        return AllocateImpl(size, alignment);
+        void* result = GetAllocationBaseAddr(size, alignment);
+        m_Offset += size;
+
+        return result;
+    }
+
+    template<typename T> T* Push(T element, uint64_t alignment = 8)
+    {
+        T* mem = (T*)Allocate(sizeof(T), alignment);
+        *mem = element;
+        return mem;
     }
 
     void BeginTempAllocations()
@@ -36,21 +50,6 @@ public:
     }
 
 private:
-    void* AllocateImpl(uint64_t size, uint64_t alignment)
-    {
-        uint64_t alignment_offset = GetAlignmentOffset(alignment);
-        uint64_t alloc_size = m_Size + alignment_offset;
-
-        Assert((m_Offset + alloc_size) <= m_Size);
-
-        void* result = (void*)((uint64_t)m_Base + m_Offset + alignment_offset);
-        m_Offset += alloc_size;
-
-        Assert(alloc_size >= m_Size);
-
-        return result;
-    }
-
     uint64_t GetAlignmentOffset(uint64_t alignment)
     {
         uint64_t current_addr = (uint64_t)m_Base + m_Offset;

@@ -72,37 +72,6 @@ void CreateFrameResources(uint32_t frame_idx)
 
 static int32_t Initialize()
 {
-    s_Kernel32 = LoadLibraryA("kernel32.dll");
-    s_User32 = LoadLibraryA("user32.dll");
-    s_Gdi32 = LoadLibraryA("gdi32.dll");
-    s_Dxgi = LoadLibraryA("dxgi.dll");
-    s_D3D12 = LoadLibraryA("d3d12.dll");
-
-    OutputDebugString = (OutputDebugString_fn)GetProcAddress(s_Kernel32, "OutputDebugStringA");
-    ExitProcess = (ExitProcess_fn)GetProcAddress(s_Kernel32, "ExitProcess");
-    GetModuleHandle = (GetModuleHandle_fn)GetProcAddress(s_Kernel32, "GetModuleHandleA");
-    Sleep = (Sleep_fn)GetProcAddress(s_Kernel32, "Sleep");
-    CreateEventEx = (CreateEventEx_fn)GetProcAddress(s_Kernel32, "CreateEventExA");
-    WaitForSingleObject = (WaitForSingleObject_fn)GetProcAddress(s_Kernel32, "WaitForSingleObject");
-    QueryPerformanceCounter = (QueryPerformanceCounter_fn)GetProcAddress(s_Kernel32, "QueryPerformanceCounter");
-    QueryPerformanceFrequency = (QueryPerformanceFrequency_fn)GetProcAddress(s_Kernel32, "QueryPerformanceFrequency");
-
-    PeekMessage = (PeekMessage_fn)GetProcAddress(s_User32, "PeekMessageA");
-    DispatchMessage = (DispatchMessage_fn)GetProcAddress(s_User32, "DispatchMessageA");
-    PostQuitMessage = (PostQuitMessage_fn)GetProcAddress(s_User32, "PostQuitMessage");
-    DefWindowProc = (DefWindowProc_fn)GetProcAddress(s_User32, "DefWindowProcA");
-    LoadCursor = (LoadCursor_fn)GetProcAddress(s_User32, "LoadCursorA");
-    RegisterClass = (RegisterClass_fn)GetProcAddress(s_User32, "RegisterClassA");
-    CreateWindowEx = (CreateWindowEx_fn)GetProcAddress(s_User32, "CreateWindowExA");
-    AdjustWindowRect = (AdjustWindowRect_fn)GetProcAddress(s_User32, "AdjustWindowRect");
-    wsprintf = (wsprintf_fn)GetProcAddress(s_User32, "wsprintfA");
-    SetWindowText = (SetWindowText_fn)GetProcAddress(s_User32, "SetWindowTextA");
-
-    CreateDXGIFactory1 = (CreateDXGIFactory1_fn)GetProcAddress(s_Dxgi, "CreateDXGIFactory1");
-
-    D3D12GetDebugInterface = (D3D12GetDebugInterface_fn)GetProcAddress(s_D3D12, "D3D12GetDebugInterface");
-    D3D12CreateDevice = (D3D12CreateDevice_fn)GetProcAddress(s_D3D12, "D3D12CreateDevice");
-
 #ifdef _DEBUG
     ID3D12Debug *dbg = nullptr;
     D3D12GetDebugInterface(IID_ID3D12Debug, (void **)&dbg);
@@ -121,7 +90,9 @@ static int32_t Initialize()
     wc.hInstance = GetModuleHandle(nullptr);
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.lpszClassName = kDemoName;
-    Assert(RegisterClass(&wc));
+    if (!RegisterClass(&wc)) {
+        Assert(0);
+    }
 
     RECT rect = { 0, 0, (int32_t)G.m_Resolution[0], (int32_t)G.m_Resolution[1] };
     if (!AdjustWindowRect(&rect, WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX, FALSE)) return 0;
@@ -202,9 +173,6 @@ static int32_t Initialize()
 
 static void Shutdown()
 {
-    //WaitForGpu();
-    //ShutdownDemo(Demo);
-
     COMRELEASE(s_Swapchain);
     COMRELEASE(G.m_CmdQueue);
     COMRELEASE(G.m_Gpu);
@@ -266,18 +234,28 @@ static int32_t Run()
     if (!Initialize())
     {
         Shutdown();
-        return 1; // error code 1
+        return 1; // error code
     }
 
+    G.m_TemporaryMemory.BeginTempAllocations();
 
+    uint32_t num_upload_buffers = 0;
+    ID3D12Resource** upload_buffers = nullptr;
 
     TestScene1 scene = {};
-    if (!scene.Initialize())
+    if (!scene.Initialize(&num_upload_buffers, &upload_buffers))
     {
         scene.Shutdown();
         Shutdown();
-        return 2; // error code 2
+        return 1; // error code
     }
+
+    for (uint32_t i = 0; i < num_upload_buffers; ++i)
+    {
+        upload_buffers[i]->Release();
+    }
+
+    G.m_TemporaryMemory.EndTempAllocations();
 
     G.m_CmdList->Close();
     G.m_CmdQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&G.m_CmdList);
@@ -298,7 +276,8 @@ static int32_t Run()
         }
 
         UpdateFrameStats(s_Window, &G.m_Time, &G.m_TimeDelta);
-        //UpdateDemo(Demo);
+
+        scene.Update();
 
         s_Swapchain->Present(0, 0);
 
@@ -320,7 +299,53 @@ static int32_t Run()
 
 void Start()
 {
-    memset(&G, 0, sizeof(G));
-    int32_t exit_code = Run();
+    s_Kernel32 = LoadLibraryA("kernel32.dll");
+    s_User32 = LoadLibraryA("user32.dll");
+    s_Gdi32 = LoadLibraryA("gdi32.dll");
+    s_Dxgi = LoadLibraryA("dxgi.dll");
+    s_D3D12 = LoadLibraryA("d3d12.dll");
+
+    OutputDebugString = (OutputDebugString_fn)GetProcAddress(s_Kernel32, "OutputDebugStringA");
+    ExitProcess = (ExitProcess_fn)GetProcAddress(s_Kernel32, "ExitProcess");
+    GetModuleHandle = (GetModuleHandle_fn)GetProcAddress(s_Kernel32, "GetModuleHandleA");
+    Sleep = (Sleep_fn)GetProcAddress(s_Kernel32, "Sleep");
+    CreateEventEx = (CreateEventEx_fn)GetProcAddress(s_Kernel32, "CreateEventExA");
+    WaitForSingleObject = (WaitForSingleObject_fn)GetProcAddress(s_Kernel32, "WaitForSingleObject");
+    QueryPerformanceCounter = (QueryPerformanceCounter_fn)GetProcAddress(s_Kernel32, "QueryPerformanceCounter");
+    QueryPerformanceFrequency = (QueryPerformanceFrequency_fn)GetProcAddress(s_Kernel32, "QueryPerformanceFrequency");
+    VirtualAlloc = (VirtualAlloc_fn)GetProcAddress(s_Kernel32, "VirtualAlloc");
+    VirtualFree = (VirtualFree_fn)GetProcAddress(s_Kernel32, "VirtualFree");
+
+    PeekMessage = (PeekMessage_fn)GetProcAddress(s_User32, "PeekMessageA");
+    DispatchMessage = (DispatchMessage_fn)GetProcAddress(s_User32, "DispatchMessageA");
+    PostQuitMessage = (PostQuitMessage_fn)GetProcAddress(s_User32, "PostQuitMessage");
+    DefWindowProc = (DefWindowProc_fn)GetProcAddress(s_User32, "DefWindowProcA");
+    LoadCursor = (LoadCursor_fn)GetProcAddress(s_User32, "LoadCursorA");
+    RegisterClass = (RegisterClass_fn)GetProcAddress(s_User32, "RegisterClassA");
+    CreateWindowEx = (CreateWindowEx_fn)GetProcAddress(s_User32, "CreateWindowExA");
+    AdjustWindowRect = (AdjustWindowRect_fn)GetProcAddress(s_User32, "AdjustWindowRect");
+    wsprintf = (wsprintf_fn)GetProcAddress(s_User32, "wsprintfA");
+    SetWindowText = (SetWindowText_fn)GetProcAddress(s_User32, "SetWindowTextA");
+
+    CreateDXGIFactory1 = (CreateDXGIFactory1_fn)GetProcAddress(s_Dxgi, "CreateDXGIFactory1");
+
+    D3D12GetDebugInterface = (D3D12GetDebugInterface_fn)GetProcAddress(s_D3D12, "D3D12GetDebugInterface");
+    D3D12CreateDevice = (D3D12CreateDevice_fn)GetProcAddress(s_D3D12, "D3D12CreateDevice");
+
+
+    uint8_t* memory = (uint8_t*)VirtualAlloc(nullptr, kPersistentMemorySize + kTemporaryMemorySize,
+                                             MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    if (!memory)
+    {
+        // TODO: Add messeage box
+        ExitProcess(1);
+    }
+
+    G.m_PersistentMemory.Initialize(kPersistentMemorySize, memory);
+    G.m_TemporaryMemory.Initialize(kTemporaryMemorySize, memory + kPersistentMemorySize);
+
+    const int32_t exit_code = Run();
+
+    VirtualFree(memory, 0, MEM_RELEASE);
     ExitProcess(exit_code);
 }
