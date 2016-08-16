@@ -1773,13 +1773,13 @@ struct D3D12_DEPTH_STENCIL_VIEW_DESC
 
 struct D3D12_DEPTH_STENCIL_VALUE
 {
-    float Depth;
-    uint8_t  Stencil;
+    float   Depth;
+    uint8_t Stencil;
 };
 
 struct D3D12_CLEAR_VALUE
 {
-    DXGI_FORMAT Format;
+    DXGI_FORMAT                   Format;
     union 
     {
         float                     Color[4];
@@ -1826,7 +1826,7 @@ struct D3D12_MEMCPY_DEST
 
 struct IUnknown
 {
-    virtual int32_t STDCALL QueryInterface(const GUID &riid, void **ppvObject) = 0;
+    virtual int32_t  STDCALL QueryInterface(const GUID &riid, void **ppvObject) = 0;
     virtual uint32_t STDCALL AddRef() = 0;
     virtual uint32_t STDCALL Release() = 0;
 };
@@ -1834,8 +1834,8 @@ struct IUnknown
 
 struct ID3DBlob : public IUnknown
 {
-    virtual void * STDCALL GetBufferPointer() = 0;
-    virtual uint64_t    STDCALL GetBufferSize() = 0;
+    virtual void *   STDCALL GetBufferPointer() = 0;
+    virtual uint64_t STDCALL GetBufferSize() = 0;
 };
 
 struct ID3D12Object : public IUnknown
