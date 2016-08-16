@@ -1,6 +1,69 @@
-﻿#include "eneida.h"
-#include "eneida_lib.cpp"
-#include "eneida_test_scene1.cpp"
+﻿#include "eneida_windows.h"
+
+// TODO: Finish Assert implementation
+#ifdef _DEBUG
+#define Assert(Expression) if (!(Expression)) { __debugbreak(); }
+#else
+#define Assert(Expression)
+#endif
+
+#define COMRELEASE(comobj) if ((comobj)) { (comobj)->Release(); (comobj) = nullptr; }
+#define COMCHECK(r) if ((r) != 0) { __debugbreak(); }
+
+#define kDemoName "eneida"
+#define kDemoResX 1280 
+#define kDemoResY 720
+#define kDemoFullscreen 0
+
+#define kNumSwapbuffers 4
+#define kNumBufferedFrames 3
+#define kNumGpuDescriptors 1000
+
+#define kPersistentMemorySize (64 * 1024)
+#define kTemporaryMemorySize (32 * 1024)
+
+struct FrameResources
+{
+    ID3D12CommandAllocator*     m_CmdAlloc;
+    ID3D12Resource*             m_Cb;
+    void*                       m_CbCpuAddr;
+    D3D12_GPU_VIRTUAL_ADDRESS   m_CbGpuAddr;
+    ID3D12DescriptorHeap*       m_Heap;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_HeapCpuStart;
+    D3D12_GPU_DESCRIPTOR_HANDLE m_HeapGpuStart;
+};
+
+struct ResourceSListNode
+{
+    ResourceSListNode* m_Next;
+    ID3D12Resource*    m_Resource;
+};
+
+// global read-only state
+static struct
+{
+    uint32_t                    m_FrameIndex;
+    uint32_t                    m_Resolution[2];
+    double                      m_Time;
+    float                       m_TimeDelta;
+    ID3D12Device*               m_Gpu;
+    ID3D12CommandQueue*         m_CmdQueue;
+    ID3D12GraphicsCommandList*  m_CmdList;
+    uint32_t                    m_RtvSize;
+    uint32_t                    m_SwapbufferIndex;
+    ID3D12Resource*             m_Swapbuffers[kNumSwapbuffers];
+    uint32_t                    m_CbvSrvUavSize;
+    D3D12_VIEWPORT              m_Viewport;
+    D3D12_RECT                  m_ScissorRect;
+    ID3D12DescriptorHeap*       m_RtvHeap;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_RtvHeapStart;
+    FrameResources              m_FrameResources[kNumBufferedFrames];
+} G;
+
+static void FlushGpu();
+
+// defined in eneida_asmlib.asm
+extern "C" void* memset(void* dest, int32_t value, size_t length);
 
 // needed by VC when CRT is not used (/NODEFAULTLIBS)
 extern "C" { int32_t _fltused; }
@@ -16,6 +79,50 @@ static void*            s_User32;
 static void*            s_Gdi32;
 static void*            s_Dxgi;
 static void*            s_D3D12;
+
+static double GetTime()
+{
+    static int64_t freq;
+    static int64_t start_counter;
+
+    if (freq == 0)
+    {
+        QueryPerformanceFrequency(&freq);
+        QueryPerformanceCounter(&start_counter);
+    }
+    int64_t counter;
+    QueryPerformanceCounter(&counter);
+    return (counter - start_counter) / (double)freq;
+}
+
+static void UpdateFrameStats(void* win, double* time, float* time_delta)
+{
+    static double prev_time = -1.0;
+    static double prev_fps_time = 0.0;
+    static uint32_t fps_frame = 0;
+
+    if (prev_time < 0.0)
+    {
+        prev_time = GetTime();
+        prev_fps_time = prev_time;
+    }
+
+    *time = GetTime();
+    *time_delta = (float)(*time - prev_time);
+    prev_time = *time;
+
+    if ((*time - prev_fps_time) >= 1.0)
+    {
+        double fps = fps_frame / (*time - prev_fps_time);
+        double micro_sec = (1.0 / fps) * 1000000.0;
+        char text[256];
+        wsprintf(text, "[%d fps  %d us] %s", (int32_t)fps, (int32_t)micro_sec, kDemoName);
+        SetWindowText(win, text);
+        prev_fps_time = *time;
+        fps_frame = 0;
+    }
+    fps_frame++;
+}
 
 static int64_t STDCALL WindowsMessageHandler(void *Window, uint32_t Message, uint64_t Param1, int64_t Param2)
 {
@@ -199,29 +306,6 @@ static int32_t Run()
     }
 
 
-    G.m_TemporaryMemory.BeginTempAllocations();
-
-    ResourceSListNode upload_buffers = {};
-
-    TestScene1 scene = {};
-    if (!scene.Initialize(&upload_buffers))
-    {
-        scene.Shutdown();
-        Shutdown();
-        return 1; // error code
-    }
-    G.m_CmdList->Close();
-    G.m_CmdQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&G.m_CmdList);
-    FlushGpu();
-
-    for (ResourceSListNode* n = upload_buffers.m_Next; n; n = n->m_Next)
-    {
-        COMRELEASE(n->m_Resource);
-    }
-
-    G.m_TemporaryMemory.EndTempAllocations();
-
-
     for (;;)
     {
         MSG Message = {};
@@ -230,7 +314,6 @@ static int32_t Run()
             DispatchMessage(&Message);
             if (Message.message == WM_QUIT)
             {
-                scene.Shutdown();
                 Shutdown();
                 return 0; // success code
             }
@@ -238,7 +321,6 @@ static int32_t Run()
 
         UpdateFrameStats(s_Window, &G.m_Time, &G.m_TimeDelta);
 
-        scene.Update();
 
         s_Swapchain->Present(0, 0);
 
@@ -301,9 +383,6 @@ void Start()
         // TODO: Add messeage box
         ExitProcess(1);
     }
-
-    G.m_PersistentMemory.Initialize(kPersistentMemorySize, memory);
-    G.m_TemporaryMemory.Initialize(kTemporaryMemorySize, memory + kPersistentMemorySize);
 
     const int32_t exit_code = Run();
 
