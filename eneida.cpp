@@ -3,6 +3,7 @@
 // shaders
 #include "s00.h"
 #include "s01.h"
+#include "s02.h"
 
 // TODO: Finish Assert implementation
 #ifdef _DEBUG
@@ -63,7 +64,9 @@ static struct
     void*                       m_Gdi32;
     void*                       m_Dxgi;
     void*                       m_D3D12;
-    ID3D12Resource*             m_TargetUav;
+    ID3D12Resource*             m_TargetTex;
+    ID3D12PipelineState*        m_DisplayPso;
+    ID3D12PipelineState*        m_ComputePso;
 } S;
 
 static void FlushGpu();
@@ -262,31 +265,42 @@ Initialize()
     D3D12_HEAP_PROPERTIES heap_props = {};
     heap_props.Type = D3D12_HEAP_TYPE_DEFAULT;
 
-    D3D12_RESOURCE_DESC uav_desc = {};
-    uav_desc.Dimension        = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    uav_desc.Width            = k_DemoResX;
-    uav_desc.Height           = k_DemoResY;
-    uav_desc.DepthOrArraySize = 1;
-    uav_desc.MipLevels        = 1;
-    uav_desc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
-    uav_desc.SampleDesc.Count = 1;
-    uav_desc.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    uav_desc.Flags            = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-    COMCHECK(S.m_Gpu->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &uav_desc,
+    D3D12_RESOURCE_DESC target_desc = {};
+    target_desc.Dimension        = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    target_desc.Width            = k_DemoResX;
+    target_desc.Height           = k_DemoResY;
+    target_desc.DepthOrArraySize = 1;
+    target_desc.MipLevels        = 1;
+    target_desc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    target_desc.SampleDesc.Count = 1;
+    target_desc.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    target_desc.Flags            = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    COMCHECK(S.m_Gpu->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &target_desc,
                                               D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr,
-                                              IID_ID3D12Resource, (void**)&S.m_TargetUav));
+                                              IID_ID3D12Resource, (void**)&S.m_TargetTex));
 
     for (uint32_t i = 0; i < k_NumBufferedFrames; ++i)
     {
         CreateFrameResources(i);
 
-        D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
-        desc.Format               = DXGI_FORMAT_R32G32B32A32_FLOAT;
-        desc.ViewDimension        = D3D12_UAV_DIMENSION_TEXTURE2D;
-        desc.Texture2D.MipSlice   = 0;
-        desc.Texture2D.PlaneSlice = 0;
-        S.m_Gpu->CreateUnorderedAccessView(S.m_TargetUav, nullptr, &desc,
-                                           S.m_FrameResources[i].m_HeapCpuStart);
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = S.m_FrameResources[i].m_HeapCpuStart;
+
+        D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
+        uav_desc.Format               = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        uav_desc.ViewDimension        = D3D12_UAV_DIMENSION_TEXTURE2D;
+        uav_desc.Texture2D.MipSlice   = 0;
+        uav_desc.Texture2D.PlaneSlice = 0;
+        S.m_Gpu->CreateUnorderedAccessView(S.m_TargetTex, nullptr, &uav_desc, cpu_handle);
+
+        cpu_handle.ptr += S.m_CbvSrvUavSize;
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+        srv_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv_desc.Texture2D.MostDetailedMip = 0;
+        srv_desc.Texture2D.MipLevels = 1;
+        S.m_Gpu->CreateShaderResourceView(S.m_TargetTex, &srv_desc, cpu_handle);
     }
 
 

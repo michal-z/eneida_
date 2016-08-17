@@ -16,4 +16,15 @@ float4 main(float4 pos : SV_Position) : SV_Target0
   return s_Texture.Load(int3(pos.xy, 0));
 }
 
+#elif defined _s02
+
+RWTexture2D<float4> s_Target : register(u0);
+
+[numthreads(8, 8, 1)]
+[RootSignature("DescriptorTable(UAV(u0))")]
+void main(uint3 global_idx : SV_DispatchThreadID)
+{
+    s_Target[global_idx.xy] = float4(0.0f, 1.0f, 0.0f, 1.0f);
+}
+
 #endif
