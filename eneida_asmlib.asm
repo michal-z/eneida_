@@ -21,6 +21,4 @@ memset:
         pop     r12
         ret
 
-section '.data' data readable writeable
-
 ; vim: ft=fasm autoindent st=8 sts=8 sw=8 :
