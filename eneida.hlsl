@@ -13,18 +13,18 @@ Texture2D<float4> s_Texture : register(t0);
 [RootSignature("DescriptorTable(SRV(t0), visibility = SHADER_VISIBILITY_PIXEL)")]
 float4 main(float4 pos : SV_Position) : SV_Target0
 {
-  return s_Texture.Load(int3(pos.xy, 0));
+    return s_Texture[pos.xy];
 }
 
 #elif defined _s02
 
 RWTexture2D<float4> s_Target : register(u0);
 
-[numthreads(8, 8, 1)]
+[numthreads(16, 16, 1)]
 [RootSignature("DescriptorTable(UAV(u0))")]
 void main(uint3 global_idx : SV_DispatchThreadID)
 {
-    s_Target[global_idx.xy] = float4(0.0f, 1.0f, 0.0f, 1.0f);
+    s_Target[global_idx.xy] = float4(global_idx.xy / float2(1280, 720), 0.0f, 1.0f);
 }
 
 #endif

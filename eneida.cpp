@@ -67,6 +67,8 @@ static struct
     ID3D12Resource*             m_TargetTex;
     ID3D12PipelineState*        m_DisplayPso;
     ID3D12PipelineState*        m_ComputePso;
+    ID3D12RootSignature*        m_DisplayRs;
+    ID3D12RootSignature*        m_ComputeRs;
 } S;
 
 static void FlushGpu();
@@ -123,6 +125,20 @@ UpdateFrameStats(void* win, double* time, float* time_delta)
     fps_frame++;
 }
 
+static void
+TransitionBarrier(ID3D12GraphicsCommandList* cmdlist, ID3D12Resource* resource,
+                  D3D12_RESOURCE_STATES state_before, D3D12_RESOURCE_STATES state_after)
+{
+    D3D12_RESOURCE_BARRIER desc = {};
+    desc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    desc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    desc.Transition.pResource = resource;
+    desc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    desc.Transition.StateBefore = state_before;
+    desc.Transition.StateAfter = state_after;
+    cmdlist->ResourceBarrier(1, &desc);
+}
+
 static int64_t STDCALL
 WindowsMessageHandler(void *window, uint32_t message, uint64_t param1, int64_t param2)
 {
@@ -141,7 +157,7 @@ CreateFrameResources(uint32_t frame_idx)
 {
     Assert(frame_idx < k_NumBufferedFrames);
 
-    FrameResources *fr = &S.m_FrameResources[frame_idx];
+    FrameResources* fr = &S.m_FrameResources[frame_idx];
 
     // command allocator
     COMCHECK(S.m_Gpu->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -173,18 +189,46 @@ CreateFrameResources(uint32_t frame_idx)
     buffer_desc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     COMCHECK(S.m_Gpu->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &buffer_desc,
                                               D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-                                              IID_ID3D12Resource, (void **)&fr->m_Cb));
+                                              IID_ID3D12Resource, (void**)&fr->m_Cb));
+}
+
+static void
+CreatePipelines()
+{
+    {
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
+        desc.VS = { s_s00, sizeof(s_s00) };
+        desc.PS = { s_s01, sizeof(s_s01) };
+        desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+        desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+        desc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+        desc.SampleMask = 0xffffffff;
+        desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+        desc.NumRenderTargets = 1;
+        desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleDesc.Count = 1;
+
+        COMCHECK(S.m_Gpu->CreateGraphicsPipelineState(&desc, IID_ID3D12PipelineState, (void**)&S.m_DisplayPso));
+        COMCHECK(S.m_Gpu->CreateRootSignature(0, s_s01, sizeof(s_s01), IID_ID3D12RootSignature, (void**)&S.m_DisplayRs));
+    }
+    {
+        D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};
+        desc.CS = { s_s02, sizeof(s_s02) };
+
+        COMCHECK(S.m_Gpu->CreateComputePipelineState(&desc, IID_ID3D12PipelineState, (void**)&S.m_ComputePso));
+        COMCHECK(S.m_Gpu->CreateRootSignature(0, s_s02, sizeof(s_s02), IID_ID3D12RootSignature, (void**)&S.m_ComputeRs));
+    }
 }
 
 static int32_t
 Initialize()
 {
 #ifdef _DEBUG
-    ID3D12Debug *dbg = nullptr;
-    D3D12GetDebugInterface(IID_ID3D12Debug, (void **)&dbg);
+    ID3D12Debug* dbg = nullptr;
+    D3D12GetDebugInterface(IID_ID3D12Debug, (void**)&dbg);
     if (dbg)
     {
-        dbg->EnableDebugLayer();
+        //dbg->EnableDebugLayer();
         COMRELEASE(dbg);
     }
 #endif
@@ -279,6 +323,8 @@ Initialize()
                                               D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr,
                                               IID_ID3D12Resource, (void**)&S.m_TargetTex));
 
+    CreatePipelines();
+
     for (uint32_t i = 0; i < k_NumBufferedFrames; ++i)
     {
         CreateFrameResources(i);
@@ -295,11 +341,11 @@ Initialize()
         cpu_handle.ptr += S.m_CbvSrvUavSize;
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
-        srv_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv_desc.Format                    = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        srv_desc.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srv_desc.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srv_desc.Texture2D.MostDetailedMip = 0;
-        srv_desc.Texture2D.MipLevels = 1;
+        srv_desc.Texture2D.MipLevels       = 1;
         S.m_Gpu->CreateShaderResourceView(S.m_TargetTex, &srv_desc, cpu_handle);
     }
 
@@ -312,6 +358,8 @@ Initialize()
 
     COMCHECK(S.m_Gpu->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, S.m_FrameResources[0].m_CmdAlloc,
                                         nullptr, IID_ID3D12GraphicsCommandList, (void**)&S.m_CmdList));
+    S.m_CmdList->Close();
+
     return 1;
 }
 
@@ -321,6 +369,58 @@ Shutdown()
     COMRELEASE(S.m_Swapchain);
     COMRELEASE(S.m_CmdQueue);
     COMRELEASE(S.m_Gpu);
+}
+
+static void
+Update()
+{
+    FrameResources* fres = &S.m_FrameResources[S.m_FrameIndex];
+
+    fres->m_CmdAlloc->Reset();
+
+    S.m_CmdList->Reset(fres->m_CmdAlloc, S.m_ComputePso);
+    S.m_CmdList->RSSetViewports(1, &S.m_Viewport);
+    S.m_CmdList->RSSetScissorRects(1, &S.m_ScissorRect);
+
+    S.m_CmdList->SetDescriptorHeaps(1, &fres->m_Heap);
+
+
+    D3D12_GPU_DESCRIPTOR_HANDLE target_handle = fres->m_HeapGpuStart;
+
+    S.m_CmdList->SetComputeRootSignature(S.m_ComputeRs);
+    S.m_CmdList->SetComputeRootDescriptorTable(0, target_handle);
+    S.m_CmdList->Dispatch(k_DemoResX / 16, k_DemoResY / 16, 1);
+
+
+    TransitionBarrier(S.m_CmdList, S.m_TargetTex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                      D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    TransitionBarrier(S.m_CmdList, S.m_Swapbuffers[S.m_SwapbufferIndex], D3D12_RESOURCE_STATE_PRESENT,
+                      D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+
+    D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = S.m_RtvHeap->GetCPUDescriptorHandleForHeapStart();
+    rtv_handle.ptr += S.m_SwapbufferIndex * S.m_RtvSize;
+    S.m_CmdList->OMSetRenderTargets(1, &rtv_handle, FALSE, nullptr);
+
+    target_handle.ptr += S.m_CbvSrvUavSize;
+
+    S.m_CmdList->SetPipelineState(S.m_DisplayPso);
+    S.m_CmdList->SetGraphicsRootSignature(S.m_DisplayRs);
+    S.m_CmdList->SetGraphicsRootDescriptorTable(0, target_handle);
+
+    S.m_CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    S.m_CmdList->DrawInstanced(3, 1, 0, 0);
+
+
+    TransitionBarrier(S.m_CmdList, S.m_TargetTex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                      D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+    TransitionBarrier(S.m_CmdList, S.m_Swapbuffers[S.m_SwapbufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET,
+                      D3D12_RESOURCE_STATE_PRESENT);
+
+    S.m_CmdList->Close();
+    S.m_CmdQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&S.m_CmdList);
 }
 
 static void
@@ -362,7 +462,7 @@ Run()
         }
 
         UpdateFrameStats(S.m_Window, &S.m_Time, &S.m_TimeDelta);
-
+        Update();
 
         S.m_Swapchain->Present(0, 0);
 
