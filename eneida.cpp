@@ -16,8 +16,7 @@
 #define COMCHECK(r) if ((r) != 0) { __debugbreak(); }
 
 #define k_DemoName "eneida"
-#define k_DemoResX 1280 
-#define k_DemoResY 720
+#define k_DemoRes 1024
 #define k_DemoFullscreen 0
 
 #define k_NumSwapbuffers 4
@@ -39,7 +38,6 @@ struct FrameResources
 static struct
 {
     uint32_t                    m_FrameIndex;
-    uint32_t                    m_Resolution[2];
     double                      m_Time;
     float                       m_TimeDelta;
     ID3D12Device*               m_Gpu;
@@ -244,9 +242,6 @@ Initialize()
     }
 #endif
 
-    S.m_Resolution[0] = k_DemoResX;
-    S.m_Resolution[1] = k_DemoResY;
-
     WNDCLASS wc = {};
     wc.lpfnWndProc = WindowsMessageHandler;
     wc.hInstance = GetModuleHandle(nullptr);
@@ -256,7 +251,7 @@ Initialize()
         Assert(0);
     }
 
-    RECT rect = { 0, 0, (int32_t)S.m_Resolution[0], (int32_t)S.m_Resolution[1] };
+    RECT rect = { 0, 0, (int32_t)k_DemoRes, (int32_t)k_DemoRes };
     if (!AdjustWindowRect(&rect, WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX, FALSE)) return 0;
 
     S.m_Window = CreateWindowEx(0, k_DemoName, k_DemoName,
@@ -313,8 +308,8 @@ Initialize()
         rtv_handle.ptr += S.m_RtvSize;
     }
 
-    S.m_Viewport = { 0.0f, 0.0f, (float)S.m_Resolution[0], (float)S.m_Resolution[1], 0.0f, 1.0f };
-    S.m_ScissorRect = { 0, 0, (int32_t)S.m_Resolution[0], (int32_t)S.m_Resolution[1] };
+    S.m_Viewport = { 0.0f, 0.0f, (float)k_DemoRes, (float)k_DemoRes, 0.0f, 1.0f };
+    S.m_ScissorRect = { 0, 0, (int32_t)k_DemoRes, (int32_t)k_DemoRes };
 
 
     D3D12_HEAP_PROPERTIES heap_props = {};
@@ -322,8 +317,8 @@ Initialize()
 
     D3D12_RESOURCE_DESC target_desc = {};
     target_desc.Dimension        = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    target_desc.Width            = k_DemoResX;
-    target_desc.Height           = k_DemoResY;
+    target_desc.Width            = k_DemoRes;
+    target_desc.Height           = k_DemoRes;
     target_desc.DepthOrArraySize = 1;
     target_desc.MipLevels        = 1;
     target_desc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -400,7 +395,7 @@ Update()
 
     S.m_CmdList->SetComputeRootSignature(S.m_ComputeRs);
     S.m_CmdList->SetComputeRootDescriptorTable(0, target_handle);
-    S.m_CmdList->Dispatch(k_DemoResX / 16, k_DemoResY / 16, 1);
+    S.m_CmdList->Dispatch(k_DemoRes / 16, k_DemoRes / 16, 1);
 
 
     TransitionBarrier(S.m_CmdList, S.m_TargetTex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS,

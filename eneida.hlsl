@@ -24,13 +24,9 @@ RWTexture2D<float4> s_Target : register(u0);
 [RootSignature("DescriptorTable(UAV(u0))")]
 void main(uint3 global_idx : SV_DispatchThreadID)
 {
-    float2 pn = -1.0f + 2.0f * float2(global_idx.x, 720 - global_idx.y) / float2(1280.0f, 720.0f);
-    pn.x *= 1.777f;
+    float2 pn = -1.0f + 2.0f * float2(global_idx.x, 1024 - global_idx.y) / float2(1024.0f, 1024.0f);
 
-    float3 ro = float3(0.0f, 0.0f, 0.0f);
-    float3 rd = normalize(float3(pn.x, pn.y, -2.0f));
-
-    s_Target[global_idx.xy] = float4(rd, 1.0f);
+    s_Target[global_idx.xy] = float4(abs(pn), 0.0f, 1.0f);
 }
 
 #endif
