@@ -13,6 +13,7 @@ typedef unsigned char       BYTE;
 #define WM_QUIT             0x0012
 #define WM_DESTROY          0x0002
 #define WM_KEYDOWN          0x0100
+#define VK_ESCAPE           0x001b
 #define WS_OVERLAPPED       0x00000000L
 #define WS_VISIBLE          0x10000000L
 #define WS_CAPTION          0x00C00000L
@@ -51,8 +52,8 @@ struct MSG
 {
     void     *hwnd;
     uint32_t message;
-    uint64_t wparam;
-    int64_t  lparam;
+    uint64_t wParam;
+    int64_t  lParam;
     uint32_t time;
     POINT    pt;
 };

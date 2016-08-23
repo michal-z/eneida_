@@ -6,6 +6,9 @@ set ASM=.\vc2015-toolchain\fasm.exe
 set CPP=.\vc2015-toolchain\cl.exe
 set HLSL=.\vc2015-toolchain\fxc /Ges /O3 /WX /nologo /Qstrip_reflect /Qstrip_debug /Qstrip_priv
 
+
+:repeat
+
 if exist *.exe del *.exe
 if exist *.pdb del *.pdb
 if exist *.obj del *.obj
@@ -31,8 +34,11 @@ if errorlevel 1 goto :fail
 :: del "%lock%*"
 
 %HLSL% /D_s00 /Vn s_s00 /E main /Fh s00.h /T vs_5_1 eneida.hlsl
+if errorlevel 1 goto :fail
 %HLSL% /D_s01 /Vn s_s01 /E main /Fh s01.h /T ps_5_1 eneida.hlsl
+if errorlevel 1 goto :fail
 %HLSL% /D_s02 /Vn s_s02 /E main /Fh s02.h /T cs_5_1 eneida.hlsl
+if errorlevel 1 goto :fail
 
 :: /Fm generates linker map file
 :: /Fa generates assembly listing
@@ -42,13 +48,22 @@ if errorlevel 1 goto :fail
 /OPT:REF /INCREMENTAL:NO /SUBSYSTEM:WINDOWS /ENTRY:Start /NODEFAULTLIB
 if errorlevel 1 goto :fail
 
+eneida.exe
+if errorlevel 1 goto :success
+
+goto :repeat
+
+
+:success
 set STATUS=0
 goto :cleanup
 
 :fail
 set STATUS=1
 
+
 :cleanup
+taskkill /im eneida.exe
 if exist vc140.pdb del vc140.pdb
 if exist *.obj del *.obj
 if exist *.h del *.h

@@ -61,7 +61,6 @@ static struct
     void*                       m_FrameFenceEvent;
     void*                       m_Kernel32;
     void*                       m_User32;
-    void*                       m_Gdi32;
     void*                       m_Dxgi;
     void*                       m_D3D12;
     ID3D12Resource*             m_TargetTex;
@@ -145,9 +144,21 @@ WindowsMessageHandler(void *window, uint32_t message, uint64_t param1, int64_t p
     switch (message)
     {
         case WM_DESTROY:
-        case WM_KEYDOWN:
             PostQuitMessage(0);
             return 0;
+
+        case WM_KEYDOWN:
+            if (param1 == VK_ESCAPE)
+            {
+                PostQuitMessage(0);
+                return 0;
+            }
+            else if (param1 == 'Q')
+            {
+                PostQuitMessage(1);
+                return 0;
+            }
+            break;
     }
     return DefWindowProc(window, message, param1, param2);
 }
@@ -444,20 +455,20 @@ Run()
     if (!Initialize())
     {
         Shutdown();
-        return 1; // error code
+        return 2;
     }
 
 
     for (;;)
     {
-        MSG Message = {};
-        while (PeekMessage(&Message, 0, 0, 0, PM_REMOVE))
+        MSG msg = {};
+        while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
         {
-            DispatchMessage(&Message);
-            if (Message.message == WM_QUIT)
+            DispatchMessage(&msg);
+            if (msg.message == WM_QUIT)
             {
                 Shutdown();
-                return 0; // success code
+                return (int32_t)msg.wParam;
             }
         }
 
@@ -487,7 +498,6 @@ Start()
 {
     S.m_Kernel32 = LoadLibraryA("kernel32.dll");
     S.m_User32 = LoadLibraryA("user32.dll");
-    S.m_Gdi32 = LoadLibraryA("gdi32.dll");
     S.m_Dxgi = LoadLibraryA("dxgi.dll");
     S.m_D3D12 = LoadLibraryA("d3d12.dll");
 
