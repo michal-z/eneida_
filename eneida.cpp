@@ -395,7 +395,7 @@ Update()
 
     S.m_CmdList->SetComputeRootSignature(S.m_ComputeRs);
     S.m_CmdList->SetComputeRootDescriptorTable(0, target_handle);
-    S.m_CmdList->Dispatch(k_DemoRes / 32, k_DemoRes / 32, 1);
+    S.m_CmdList->Dispatch(k_DemoRes / 16, k_DemoRes / 16, 1);
 
 
     TransitionBarrier(S.m_CmdList, S.m_TargetTex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
