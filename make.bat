@@ -43,7 +43,7 @@ if errorlevel 1 goto :fail
 :: /Fm generates linker map file
 :: /Fa generates assembly listing
 %CPP% ^
-/Zi /Ox /DNDEBUG /Gm- /nologo /WX /W3 /GS- /Gs999999 /Gy /Gw /EHa- eneida.cpp ^
+/Zi /Od /D_DEBUG /Gm- /nologo /WX /W3 /GS- /Gs999999 /Gy /Gw /EHa- eneida.cpp ^
 /link eneida_asmlib.obj vc2015-toolchain\kernel32.lib ^
 /OPT:REF /INCREMENTAL:NO /SUBSYSTEM:WINDOWS /ENTRY:Start /NODEFAULTLIB
 if errorlevel 1 goto :fail

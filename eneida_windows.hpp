@@ -2558,6 +2558,9 @@ typedef int32_t  (STDCALL *D3D12CreateDevice_fn)(IUnknown *, D3D_FEATURE_LEVEL, 
 typedef int32_t  (STDCALL *D3D12GetDebugInterface_fn)(const GUID &, void **);
 
 
+extern int __cdecl _rdrand64_step(unsigned __int64 *);
+
+
 static OutputDebugString_fn         OutputDebugString;
 static ExitProcess_fn               ExitProcess;
 static DefWindowProc_fn             DefWindowProc;
