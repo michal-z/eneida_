@@ -127,12 +127,12 @@ TransitionBarrier(ID3D12GraphicsCommandList* cmdlist, ID3D12Resource* resource,
                   D3D12_RESOURCE_STATES state_before, D3D12_RESOURCE_STATES state_after)
 {
     D3D12_RESOURCE_BARRIER desc = {};
-    desc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    desc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    desc.Transition.pResource = resource;
+    desc.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    desc.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    desc.Transition.pResource   = resource;
     desc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     desc.Transition.StateBefore = state_before;
-    desc.Transition.StateAfter = state_after;
+    desc.Transition.StateAfter  = state_after;
     cmdlist->ResourceBarrier(1, &desc);
 }
 
@@ -281,7 +281,7 @@ Initialize()
     swapchain_desc.SwapEffect        = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
     swapchain_desc.Windowed          = (k_DemoFullscreen ? FALSE : TRUE);
 
-    IDXGISwapChain *swapchain = nullptr;
+    IDXGISwapChain* swapchain = nullptr;
     COMCHECK(factory_dxgi->CreateSwapChain(S.m_CmdQueue, &swapchain_desc, &swapchain));
     COMCHECK(swapchain->QueryInterface(IID_IDXGISwapChain3, (void**)&S.m_Swapchain));
     COMRELEASE(swapchain);

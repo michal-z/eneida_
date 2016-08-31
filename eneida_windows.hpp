@@ -2144,11 +2144,11 @@ struct DXGI_GAMMA_CONTROL
 
 struct DXGI_GAMMA_CONTROL_CAPABILITIES
 {
-    BOOL ScaleAndOffsetSupported;
-    float MaxConvertedValue;
-    float MinConvertedValue;
+    BOOL     ScaleAndOffsetSupported;
+    float    MaxConvertedValue;
+    float    MinConvertedValue;
     uint32_t NumGammaControlPoints;
-    float ControlPointPositions[1025];
+    float    ControlPointPositions[1025];
 };
 
 struct DXGI_RATIONAL
@@ -2195,7 +2195,7 @@ struct DXGI_OUTPUT_DESC
 {
     wchar_t            DeviceName[32];
     RECT               DesktopCoordinates;
-    BOOL                AttachedToDesktop;
+    BOOL               AttachedToDesktop;
     DXGI_MODE_ROTATION Rotation;
     void               *Monitor;
 };
