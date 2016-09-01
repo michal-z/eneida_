@@ -39,6 +39,8 @@ if errorlevel 1 goto :fail
 if errorlevel 1 goto :fail
 %HLSL% /D_s02 /Vn s_s02 /E main /Fh s02.h /T cs_5_1 eneida.hlsl
 if errorlevel 1 goto :fail
+%HLSL% /D_s03 /Vn s_s03 /E main /Fh s03.h /T cs_5_1 eneida.hlsl
+if errorlevel 1 goto :fail
 
 :: /Fm generates linker map file
 :: /Fa generates assembly listing

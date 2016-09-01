@@ -4,6 +4,7 @@
 #include "s00.h"
 #include "s01.h"
 #include "s02.h"
+#include "s03.h"
 
 // TODO: Finish Assert implementation
 #ifdef _DEBUG
@@ -222,10 +223,10 @@ CreatePipelines()
     }
     {
         D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};
-        desc.CS = { s_s02, sizeof(s_s02) };
+        desc.CS = { s_s03, sizeof(s_s03) };
 
         COMCHECK(S.m_Gpu->CreateComputePipelineState(&desc, IID_ID3D12PipelineState, (void**)&S.m_ComputePso));
-        COMCHECK(S.m_Gpu->CreateRootSignature(0, s_s02, sizeof(s_s02), IID_ID3D12RootSignature, (void**)&S.m_ComputeRs));
+        COMCHECK(S.m_Gpu->CreateRootSignature(0, s_s03, sizeof(s_s03), IID_ID3D12RootSignature, (void**)&S.m_ComputeRs));
     }
 }
 
