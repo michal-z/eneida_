@@ -60,7 +60,7 @@ void main(uint3 dispatch_tid : SV_DispatchThreadID)
 
 #elif defined _s03
 
-#define kViewDistance 30.0f
+#define kViewDistance 35.0f
 
 RWTexture2D<float4> s_Target : register(u0);
 
@@ -68,13 +68,13 @@ float4 Map(float3 p)
 {
     float4 obj = float4(1.0f, 0.0f, 0.0f, p.y + 2.0f);
 
-    float d = length(p - float3(0.1f, 0.0f, -3.0f)) - 1.0f;
+    float d = length(p - float3(0.1f, 0.0f, -5.0f)) - 1.0f;
     if (d < obj.w) obj = float4(0.0f, 1.0f, 0.0f, d);
 
-    d = length(p - float3(1.1f, 0.0f, -3.0f)) - 0.5f;
+    d = length(p - float3(1.1f, 0.0f, -4.0f)) - 0.5f;
     if (d < obj.w) obj = float4(0.0f, 0.0f, 1.0f, d);
 
-    d = length(p - float3(-1.1f, 0.0f, -3.0f)) - 0.25f;
+    d = length(p - float3(-1.5f, 0.0f, -3.5f)) - 0.25f;
     if (d < obj.w) obj = float4(1.0f, 1.0, 0.0f, d);
 
     return obj;
@@ -82,29 +82,36 @@ float4 Map(float3 p)
 
 float MapD(float3 p)
 {
-    float dist = p.y + 2.0f;
-
-    float d = length(p - float3(0.1f, 0.0f, -3.0f)) - 1.0f;
-    dist = min(dist, d);
-
-    d = length(p - float3(1.1f, 0.0f, -3.0f)) - 0.5f;
-    dist = min(dist, d);
-
-    d = length(p - float3(-1.1f, 0.0f, -3.0f)) - 0.25f;
-    dist = min(dist, d);
-
+    float dist = min(p.y + 2.0f, length(p - float3(0.1f, 0.0f, -5.0f)) - 1.0f);
+    dist = min(dist, length(p - float3(1.1f, 0.0f, -4.0f)) - 0.5f);
+    dist = min(dist, length(p - float3(-1.5f, 0.0f, -3.5f)) - 0.25f);
     return dist;
 }
 
 float4 Intersect(float3 ro, float3 rd)
 {
-    float dist = 0.0f;
+    float dist = 0.0001f;
 
     for (;;)
     {
         float4 obj = Map(ro + dist * rd);
         if (obj.w < 0.001f || dist > kViewDistance) return float4(obj.r, obj.g, obj.b, dist);
         dist += obj.w;
+    }
+}
+
+float Shadow(float3 ro, float3 rd)
+{
+    float dist = 0.0001f;
+    float res = 1.0f;
+
+    for (;;)
+    {
+        float d = MapD(ro + dist * rd);
+        if (d < 0.001f) return 0.0f;
+        res = min(res, 8.0f * d / dist);
+        if (dist > kViewDistance) return res;
+        dist += d;
     }
 }
 
@@ -133,8 +140,10 @@ void main(uint3 dispatch_tid : SV_DispatchThreadID)
     {
         float3 p = ro + rd * obj.w;
         float3 n = ComputeNormal(p);
+        float3 l = normalize(float3(15.0f, 15.0f, 15.0f) - p);
 
-        color = max(0.0f, dot(n, normalize(float3(1.0f, 1.0f, 1.0f)))) * obj.rgb;
+        float s = Shadow(p + l * 0.01f, l);
+        color = max(0.0f, dot(n, l)) * obj.rgb * s;
     }
 
     s_Target[dispatch_tid.xy] = float4(color, 1.0f);
