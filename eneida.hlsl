@@ -60,50 +60,81 @@ void main(uint3 dispatch_tid : SV_DispatchThreadID)
 
 #elif defined _s03
 
+#define kViewDistance 30.0f
+
 RWTexture2D<float4> s_Target : register(u0);
 
-float2 Map(float3 p)
+float4 Map(float3 p)
 {
-    float2 hit = float2(length(p - float3(0.1f, 0.1f, -3.0f)) - 1.0f, 1.0f);
+    float4 obj = float4(1.0f, 0.0f, 0.0f, p.y + 2.0f);
 
-    float d = length(p - float3(1.1f, 0.1f, -3.0f)) - 0.5f;
-    if (d < hit.x) hit = float2(d, 2.0f);
+    float d = length(p - float3(0.1f, 0.0f, -3.0f)) - 1.0f;
+    if (d < obj.w) obj = float4(0.0f, 1.0f, 0.0f, d);
 
-    d = length(p - float3(1.1f, -1.1f, -3.0f)) - 0.25f;
-    if (d < hit.x) hit = float2(d, 3.0f);
+    d = length(p - float3(1.1f, 0.0f, -3.0f)) - 0.5f;
+    if (d < obj.w) obj = float4(0.0f, 0.0f, 1.0f, d);
 
-    return hit;
+    d = length(p - float3(-1.1f, 0.0f, -3.0f)) - 0.25f;
+    if (d < obj.w) obj = float4(1.0f, 1.0, 0.0f, d);
+
+    return obj;
 }
 
-float2 Intersect(float3 ro, float3 rd)
+float MapD(float3 p)
+{
+    float dist = p.y + 2.0f;
+
+    float d = length(p - float3(0.1f, 0.0f, -3.0f)) - 1.0f;
+    dist = min(dist, d);
+
+    d = length(p - float3(1.1f, 0.0f, -3.0f)) - 0.5f;
+    dist = min(dist, d);
+
+    d = length(p - float3(-1.1f, 0.0f, -3.0f)) - 0.25f;
+    dist = min(dist, d);
+
+    return dist;
+}
+
+float4 Intersect(float3 ro, float3 rd)
 {
     float dist = 0.0f;
 
     for (;;)
     {
-        float2 obj = Map(ro + dist * rd);
-        if (obj.x < 0.001f || dist > 10.0f) return float2(dist, obj.y);
-        dist += obj.x;
+        float4 obj = Map(ro + dist * rd);
+        if (obj.w < 0.001f || dist > kViewDistance) return float4(obj.r, obj.g, obj.b, dist);
+        dist += obj.w;
     }
+}
+
+float3 ComputeNormal(float3 p)
+{
+    float3 n;
+    n.x = MapD(float3(p.x + 0.001f, p.y, p.z)) - MapD(float3(p.x - 0.001f, p.y, p.z));
+    n.y = MapD(float3(p.x, p.y + 0.001f, p.z)) - MapD(float3(p.x, p.y - 0.001f, p.z));
+    n.z = MapD(float3(p.x, p.y, p.z + 0.001f)) - MapD(float3(p.x, p.y, p.z - 0.001f));
+    return normalize(n);
 }
 
 [numthreads(8, 8, 1)]
 [RootSignature("DescriptorTable(UAV(u0))")]
 void main(uint3 dispatch_tid : SV_DispatchThreadID)
 {
-    float2 p = -1.0f + 2.0f * float2(dispatch_tid.x, 1024.0f - dispatch_tid.y) / float2(1024.0f, 1024.0f);
+    float2 pn = -1.0f + 2.0f * float2(dispatch_tid.x, 1024.0f - dispatch_tid.y) / float2(1024.0f, 1024.0f);
 
     float3 ro = float3(0.0f, 0.0f, 0.0f);
-    float3 rd = normalize(float3(p.x, p.y, -1.5f));
+    float3 rd = normalize(float3(pn.x, pn.y, -1.5f));
 
-    float2 obj = Intersect(ro, rd);
+    float4 obj = Intersect(ro, rd);
     float3 color = float3(0.0f, 0.0f, 0.0f);
 
-    if (obj.x < 10.0f)
+    if (obj.w < kViewDistance)
     {
-        if (obj.y == 1.0f) color = float3(1.0f, 0.0f, 0.0f);
-        else if (obj.y == 2.0f) color = float3(0.0f, 1.0f, 0.0f);
-        else if (obj.y == 3.0f) color = float3(0.0f, 0.0f, 1.0f);
+        float3 p = ro + rd * obj.w;
+        float3 n = ComputeNormal(p);
+
+        color = max(0.0f, dot(n, normalize(float3(1.0f, 1.0f, 1.0f)))) * obj.rgb;
     }
 
     s_Target[dispatch_tid.xy] = float4(color, 1.0f);
