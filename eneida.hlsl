@@ -1,3 +1,9 @@
+struct Params
+{
+    uint frame;
+};
+ConstantBuffer<Params> s_Params;
+//==============================================================================
 #if defined _s00
 
 float4 main(uint id : SV_VertexID) : SV_Position
@@ -5,18 +11,24 @@ float4 main(uint id : SV_VertexID) : SV_Position
     float2 v[3] = { float2(-1.0f, -1.0f), float2(3.0f, -1.0f), float2(-1.0f, 3.0f) };
     return float4(v[id], 0.0f, 1.0f);
 }
-
+//==============================================================================
 #elif defined _s01
+
+#define RootSig \
+    "DescriptorTable(SRV(t0), visibility = SHADER_VISIBILITY_PIXEL)"
 
 Texture2D<float4> s_Texture : register(t0);
 
-[RootSignature("DescriptorTable(SRV(t0), visibility = SHADER_VISIBILITY_PIXEL)")]
+[RootSignature(RootSig)]
 float4 main(float4 pos : SV_Position) : SV_Target0
 {
     return s_Texture[pos.xy];
 }
-
+//==============================================================================
 #elif defined _s02
+
+#define RootSig \
+    "DescriptorTable(UAV(u0))"
 
 RWTexture2D<float4> s_Target : register(u0);
 
@@ -31,7 +43,7 @@ float2 ComplexSq(float2 a)
 }
 
 [numthreads(8, 8, 1)]
-[RootSignature("DescriptorTable(UAV(u0))")]
+[RootSignature(RootSig)]
 void main(uint3 dispatch_tid : SV_DispatchThreadID)
 {
     float2 z = float2(0.0f, 0.0f);
@@ -57,10 +69,12 @@ void main(uint3 dispatch_tid : SV_DispatchThreadID)
     d = pow(abs(d), 0.3f);
     s_Target[dispatch_tid.xy] = float4(d, d, d, 1.0f);
 }
-
+//==============================================================================
 #elif defined _s03
 
-#define kViewDistance 35.0f
+#define kViewDistance 50.0f
+#define RootSig \
+    "DescriptorTable(UAV(u0))"
 
 RWTexture2D<float4> s_Target : register(u0);
 
@@ -90,7 +104,7 @@ float MapD(float3 p)
 
 float4 Intersect(float3 ro, float3 rd)
 {
-    float dist = 0.0001f;
+    float dist = 0.001f;
 
     for (;;)
     {
@@ -102,7 +116,7 @@ float4 Intersect(float3 ro, float3 rd)
 
 float Shadow(float3 ro, float3 rd)
 {
-    float dist = 0.0001f;
+    float dist = 0.001f;
     float res = 1.0f;
 
     for (;;)
@@ -125,7 +139,7 @@ float3 ComputeNormal(float3 p)
 }
 
 [numthreads(8, 8, 1)]
-[RootSignature("DescriptorTable(UAV(u0))")]
+[RootSignature(RootSig)]
 void main(uint3 dispatch_tid : SV_DispatchThreadID)
 {
     float2 pn = -1.0f + 2.0f * float2(dispatch_tid.x, 1024.0f - dispatch_tid.y) / float2(1024.0f, 1024.0f);
@@ -146,7 +160,8 @@ void main(uint3 dispatch_tid : SV_DispatchThreadID)
         color = max(0.0f, dot(n, l)) * obj.rgb * s;
     }
 
-    s_Target[dispatch_tid.xy] = float4(color, 1.0f);
+    s_Target[dispatch_tid.xy] += float4(color, 1.0f);
 }
+//==============================================================================
 
 #endif
