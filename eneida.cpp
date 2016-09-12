@@ -77,8 +77,7 @@ extern "C" void* memset(void* dest, int32_t value, size_t length);
 // needed by VC when CRT is not used (/NODEFAULTLIBS)
 extern "C" { int32_t _fltused; }
 
-static double
-GetTime()
+static double GetTime()
 {
     static int64_t freq;
     static int64_t start_counter;
@@ -93,8 +92,7 @@ GetTime()
     return (counter - start_counter) / (double)freq;
 }
 
-static void
-UpdateFrameStats(void* win, double* time, float* time_delta)
+static void UpdateFrameStats(void* win, double* time, float* time_delta)
 {
     static double prev_time = -1.0;
     static double prev_fps_time = 0.0;
@@ -123,22 +121,20 @@ UpdateFrameStats(void* win, double* time, float* time_delta)
     fps_frame++;
 }
 
-static void
-TransitionBarrier(ID3D12GraphicsCommandList* cmdlist, ID3D12Resource* resource,
-                  D3D12_RESOURCE_STATES state_before, D3D12_RESOURCE_STATES state_after)
+static void TransitionBarrier(ID3D12GraphicsCommandList* cmdlist, ID3D12Resource* resource,
+                              D3D12_RESOURCE_STATES state_before, D3D12_RESOURCE_STATES state_after)
 {
     D3D12_RESOURCE_BARRIER desc = {};
-    desc.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    desc.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    desc.Transition.pResource   = resource;
+    desc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    desc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    desc.Transition.pResource = resource;
     desc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     desc.Transition.StateBefore = state_before;
-    desc.Transition.StateAfter  = state_after;
+    desc.Transition.StateAfter = state_after;
     cmdlist->ResourceBarrier(1, &desc);
 }
 
-static int64_t STDCALL
-WindowsMessageHandler(void *window, uint32_t message, uint64_t param1, int64_t param2)
+static int64_t STDCALL WindowsMessageHandler(void *window, uint32_t message, uint64_t param1, int64_t param2)
 {
     switch (message)
     {
@@ -162,8 +158,7 @@ WindowsMessageHandler(void *window, uint32_t message, uint64_t param1, int64_t p
     return DefWindowProc(window, message, param1, param2);
 }
 
-static void
-CreateFrameResources(uint32_t frame_idx)
+static void CreateFrameResources(uint32_t frame_idx)
 {
     Assert(frame_idx < k_NumBufferedFrames);
 
@@ -176,8 +171,8 @@ CreateFrameResources(uint32_t frame_idx)
     // GPU visible decriptor heap
     D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
     heap_desc.NumDescriptors = k_NumGpuDescriptors;
-    heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     COMCHECK(S.m_Gpu->CreateDescriptorHeap(&heap_desc, IID_ID3D12DescriptorHeap,
                                            (void**)&fr->m_Heap));
 
@@ -190,20 +185,19 @@ CreateFrameResources(uint32_t frame_idx)
     heap_props.Type = D3D12_HEAP_TYPE_UPLOAD;
 
     D3D12_RESOURCE_DESC buffer_desc = {};
-    buffer_desc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
-    buffer_desc.Width            = 64 * 1024;
-    buffer_desc.Height           = 1;
+    buffer_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    buffer_desc.Width = 64 * 1024;
+    buffer_desc.Height = 1;
     buffer_desc.DepthOrArraySize = 1;
-    buffer_desc.MipLevels        = 1;
+    buffer_desc.MipLevels = 1;
     buffer_desc.SampleDesc.Count = 1;
-    buffer_desc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    buffer_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     COMCHECK(S.m_Gpu->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &buffer_desc,
                                               D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
                                               IID_ID3D12Resource, (void**)&fr->m_Cb));
 }
 
-static void
-CreatePipelines()
+static void CreatePipelines()
 {
     {
         D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
@@ -227,11 +221,18 @@ CreatePipelines()
 
         COMCHECK(S.m_Gpu->CreateComputePipelineState(&desc, IID_ID3D12PipelineState, (void**)&S.m_ComputePso));
         COMCHECK(S.m_Gpu->CreateRootSignature(0, s_s03, sizeof(s_s03), IID_ID3D12RootSignature, (void**)&S.m_ComputeRs));
+
+        ID3DBlob* blob = nullptr;
+        S.m_ComputePso->GetCachedBlob(&blob);
+        void* d3d_compiler = LoadLibraryA("vc2015-toolchain/d3dcompiler_47.dll");
+        D3DWriteBlobToFile_fn D3DWriteBlobToFile = (D3DWriteBlobToFile_fn)GetProcAddress(d3d_compiler, "D3DWriteBlobToFile");
+
+        D3DWriteBlobToFile(blob, L"blob.bin", TRUE);
+        // %!xxd
     }
 }
 
-static int32_t
-Initialize()
+static int32_t Initialize()
 {
 #ifdef _DEBUG
     ID3D12Debug* dbg = nullptr;
@@ -268,19 +269,19 @@ Initialize()
     COMCHECK(D3D12CreateDevice(0, D3D_FEATURE_LEVEL_12_0, IID_ID3D12Device, (void**)&S.m_Gpu));
 
     D3D12_COMMAND_QUEUE_DESC cmd_queue_desc = {};
-    cmd_queue_desc.Flags    = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    cmd_queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     cmd_queue_desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-    cmd_queue_desc.Type     = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    cmd_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     COMCHECK(S.m_Gpu->CreateCommandQueue(&cmd_queue_desc, IID_ID3D12CommandQueue, (void**)&S.m_CmdQueue));
 
     DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
-    swapchain_desc.BufferCount       = k_NumSwapbuffers;
+    swapchain_desc.BufferCount = k_NumSwapbuffers;
     swapchain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    swapchain_desc.BufferUsage       = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapchain_desc.OutputWindow      = S.m_Window;
+    swapchain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapchain_desc.OutputWindow = S.m_Window;
     swapchain_desc.SampleDesc.Count  = 1;
-    swapchain_desc.SwapEffect        = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    swapchain_desc.Windowed          = (k_DemoFullscreen ? FALSE : TRUE);
+    swapchain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    swapchain_desc.Windowed = (k_DemoFullscreen ? FALSE : TRUE);
 
     IDXGISwapChain* swapchain = nullptr;
     COMCHECK(factory_dxgi->CreateSwapChain(S.m_CmdQueue, &swapchain_desc, &swapchain));
@@ -294,8 +295,8 @@ Initialize()
 
     D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc = {};
     rtv_heap_desc.NumDescriptors = k_NumSwapbuffers;
-    rtv_heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    rtv_heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    rtv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtv_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     COMCHECK(S.m_Gpu->CreateDescriptorHeap(&rtv_heap_desc, IID_ID3D12DescriptorHeap, (void**)&S.m_RtvHeap));
     S.m_RtvHeapStart = S.m_RtvHeap->GetCPUDescriptorHandleForHeapStart();
 
@@ -317,15 +318,15 @@ Initialize()
     heap_props.Type = D3D12_HEAP_TYPE_DEFAULT;
 
     D3D12_RESOURCE_DESC target_desc = {};
-    target_desc.Dimension        = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    target_desc.Width            = k_DemoRes;
-    target_desc.Height           = k_DemoRes;
+    target_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    target_desc.Width = k_DemoRes;
+    target_desc.Height = k_DemoRes;
     target_desc.DepthOrArraySize = 1;
-    target_desc.MipLevels        = 1;
-    target_desc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    target_desc.MipLevels = 1;
+    target_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     target_desc.SampleDesc.Count = 1;
-    target_desc.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    target_desc.Flags            = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    target_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    target_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     COMCHECK(S.m_Gpu->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &target_desc,
                                               D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr,
                                               IID_ID3D12Resource, (void**)&S.m_TargetTex));
@@ -339,20 +340,20 @@ Initialize()
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = S.m_FrameResources[i].m_HeapCpuStart;
 
         D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
-        uav_desc.Format               = DXGI_FORMAT_R32G32B32A32_FLOAT;
-        uav_desc.ViewDimension        = D3D12_UAV_DIMENSION_TEXTURE2D;
-        uav_desc.Texture2D.MipSlice   = 0;
+        uav_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+        uav_desc.Texture2D.MipSlice = 0;
         uav_desc.Texture2D.PlaneSlice = 0;
         S.m_Gpu->CreateUnorderedAccessView(S.m_TargetTex, nullptr, &uav_desc, cpu_handle);
 
         cpu_handle.ptr += S.m_CbvSrvUavSize;
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
-        srv_desc.Format                    = DXGI_FORMAT_R32G32B32A32_FLOAT;
-        srv_desc.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srv_desc.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srv_desc.Texture2D.MostDetailedMip = 0;
-        srv_desc.Texture2D.MipLevels       = 1;
+        srv_desc.Texture2D.MipLevels = 1;
         S.m_Gpu->CreateShaderResourceView(S.m_TargetTex, &srv_desc, cpu_handle);
     }
 
@@ -370,16 +371,14 @@ Initialize()
     return 1;
 }
 
-static void
-Shutdown()
+static void Shutdown()
 {
     COMRELEASE(S.m_Swapchain);
     COMRELEASE(S.m_CmdQueue);
     COMRELEASE(S.m_Gpu);
 }
 
-static void
-Update()
+static void Update()
 {
     FrameResources* fres = &S.m_FrameResources[S.m_FrameIndex];
 
@@ -430,8 +429,7 @@ Update()
     S.m_CmdQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&S.m_CmdList);
 }
 
-static void
-FlushGpu()
+static void FlushGpu()
 {
     if (S.m_CmdQueue && S.m_FrameFence)
     {
@@ -445,8 +443,7 @@ FlushGpu()
     }
 }
 
-static int32_t
-Run()
+static int32_t Run()
 {
     if (!Initialize())
     {
@@ -489,8 +486,7 @@ Run()
     }
 }
 
-void
-Start()
+void Start()
 {
     S.m_Kernel32 = LoadLibraryA("kernel32.dll");
     S.m_User32 = LoadLibraryA("user32.dll");

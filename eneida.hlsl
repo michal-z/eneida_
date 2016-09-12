@@ -155,12 +155,13 @@ void main(uint3 dispatch_tid : SV_DispatchThreadID)
         float3 p = ro + rd * obj.w;
         float3 n = ComputeNormal(p);
         float3 l = normalize(float3(15.0f, 15.0f, 15.0f) - p);
+        float3 h = normalize(normalize(ro - p) + l);
 
         float s = Shadow(p + l * 0.01f, l);
-        color = max(0.0f, dot(n, l)) * obj.rgb * s;
+        color = s * (saturate(dot(n, l)) * obj.rgb + pow(saturate(dot(n, h)), 128.0f));
     }
 
-    s_Target[dispatch_tid.xy] += float4(color, 1.0f);
+    s_Target[dispatch_tid.xy] = float4(color, 1.0f);
 }
 //==============================================================================
 

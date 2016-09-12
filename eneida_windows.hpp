@@ -2558,6 +2558,10 @@ typedef int32_t  (STDCALL *D3D12CreateDevice_fn)(IUnknown *, D3D_FEATURE_LEVEL, 
 typedef int32_t  (STDCALL *D3D12GetDebugInterface_fn)(const GUID &, void **);
 
 
+typedef int32_t (STDCALL *D3DWriteBlobToFile_fn)(ID3DBlob *pBlob, wchar_t* pFileName, BOOL bOverwrite);
+        
+
+
 extern int __cdecl _rdrand64_step(unsigned __int64 *);
 
 
