@@ -1,1 +1,1 @@
-# DirectX 12 Deferred Shading demo (wip)
+# CPU and GPU programming experiments
