@@ -1,0 +1,13 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{EB2F15B7-414F-4263-49E7-4D9CC3FDD1D8}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "eneida",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
