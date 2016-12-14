@@ -35,6 +35,10 @@
 !*.exp
 !*.manifest
 
+# UE4 asset files
+!*.uasset
+!*.umap
+
 # Java source files
 !*.java
 !*.java.template
@@ -137,7 +141,7 @@
 !/Engine/Binaries/DotNET/GitDependencies.exe.config
 
 # Ignore content folders
-Content/
+#Content/
 
 # Ignore DDC
 /Engine/DerivedDataCache/**
